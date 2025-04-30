@@ -3,7 +3,7 @@
 <img
   src="images/jparse_splash.png"
   alt="JPARSE splash"
-  style="width:60%;"
+  style="width:100%;"
 />
 
 ![JPARSE Concept diagram](images/jparse_concept_fig.png)
