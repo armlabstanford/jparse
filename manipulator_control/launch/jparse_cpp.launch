@@ -1,0 +1,19 @@
+<launch>
+    <arg name="namespace" default="xarm" />
+    <arg name="base_link_name" default="link_base" /> 
+    <arg name="end_link_name" default="link_eef" />
+    <arg name="jparse_gamma" default="0.2" />
+    <arg name="singular_direction_gain_position" default="2.0" />
+    <arg name="singular_direction_gain_angular" default="2.0" />
+    <arg name="run_as_service" default="false" />
+   
+    <node pkg="manipulator_control" type="jparse" name="jparse_node" output="screen">
+        <remap from="/joint_states" to="/$(arg namespace)/joint_states"/>
+        <param name="base_link_name" value="$(arg base_link_name)"/>
+        <param name="end_link_name" value="$(arg end_link_name)"/>
+        <param name="jparse_gamma" value="$(arg jparse_gamma)"/>
+        <param name="singular_direction_gain_position" value="$(arg singular_direction_gain_position)" />
+        <param name="singular_direction_gain_angular" value="$(arg singular_direction_gain_angular)" />
+        <param name="run_as_service" value="$(arg run_as_service)" />
+    </node>
+</launch>

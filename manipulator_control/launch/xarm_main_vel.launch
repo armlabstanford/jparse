@@ -1,0 +1,39 @@
+<launch>
+
+    <!-- Boolean variable to control position only mode versus full pose -->
+    <arg name="position_only" default="False" />
+    <!-- The options are "JParse", "JacobianPseudoInverse" (basic); "JacobianDampedLeastSquares"; "JacobianProjection"; "JacobianDynamicallyConsistentInverse"  -->
+    <arg name="method" default="JParse" />
+    <!-- Topic to publish commanded joint velocities -->
+    <arg name="joint_command_topic" default="/xarm/xarm7_traj_controller/command" />
+    <!-- Is sim or not -->
+    <arg name="is_sim" default="False" />
+    <!-- robot ip -->
+    <arg name="robot_ip" default="192.168.1.233" />
+    <!-- Set the phi_gain - gain in JParse singular direction -->
+
+    <arg name="phi_gain_position" default="2.0" />
+    <arg name="phi_gain_angular" default="2.0" />
+    <!-- Boolean variable to control whether to show JParse ellipses -->
+    <arg name="show_jparse_ellipses" default="True" />
+    <!-- Set the jparse_gamma -->
+    <arg name="jparse_gamma" default="0.2" />
+    <!-- option to use space mouse-->
+    <arg name="use_space_mouse" default="False" />
+
+    <node name="xarm_vel_main_experiment" pkg="manipulator_control" type="xarm_vel_main_experiment.py"  output="screen">
+        <!-- Add any necessary parameters or remappings here -->
+        <param name="position_only" value="$(arg position_only)" />
+        <param name="method" value="$(arg method)" />
+        <param name="joint_command_topic" value="$(arg joint_command_topic)" />
+        <param name="base_link_name" value="link_base"/>
+        <param name="end_link_name" value="link_eef"/>
+        <param name="is_sim" value="$(arg is_sim)" />
+        <param name="phi_gain_position" value="$(arg phi_gain_position)" />
+        <param name="phi_gain_angular" value="$(arg phi_gain_angular)" />
+        <param name="robot_ip" value="$(arg robot_ip)" />
+        <param name="show_jparse_ellipses" value="$(arg show_jparse_ellipses)" />
+        <param name="jparse_gamma" value="$(arg jparse_gamma)" />
+        <param name="use_space_mouse" value="$(arg use_space_mouse)" />
+    </node>
+</launch>

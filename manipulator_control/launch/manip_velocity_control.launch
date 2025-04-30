@@ -1,0 +1,18 @@
+<launch>
+    <!-- Robot type - could be panda or gen3 (kinova)  -->
+    <arg name="robot_type" default="my_gen3" />
+    <!-- Boolean variable to control position only mode versus full pose -->
+    <arg name="position_only" default="true" />
+
+    <!-- This is for Franka Emika Panda robot -->
+    <group if="$(eval arg('robot_type') == 'my_gen3')">
+        <node name="main_experiment_kinova" pkg="manipulator_control" type="main_experiment_kinova.py" ns="my_gen3" respawn="false" output="screen">
+            <!-- Add any necessary parameters or arguments here -->
+            <remap from="/joint_states" to="/my_gen3/joint_states"/>
+            <param name="/base_link_name" value="base_link"/>
+            <param name="/end_link_name" value="end_effector_link"/>
+            <param name="/position_only" value="$(arg position_only)" />
+        </node>
+    </group>
+
+</launch>

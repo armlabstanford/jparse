@@ -1,0 +1,27 @@
+<launch>
+    <!-- Arguments for trajectory parameters -->
+    <arg name="center" default="[0.5, 0.0, 0.3]" />
+    <arg name="major_axis" default="0.15" />
+    <!-- <arg name="minor_axis" default="0.3" /> -->
+    <arg name="minor_axis" default="0.7" />
+    <arg name="pitch_axis" default="0.0" />
+    <arg name="plane" default="xy" />
+    <arg name="frequency" default="0.1" />
+
+    <!-- Argument for robot type -->
+    <arg name="robot" default="panda" />
+
+    <!-- Conditional base_frame based on robot type -->
+    <arg name="base_frame" value="$(eval 'panda_1_link0' if robot == 'panda' else 'link_base')" />
+
+    <!-- Node launching with parameters set from arguments -->
+    <node pkg="manipulator_control" type="position_trajectory_generator.py" name="oval_trajectory_generator" output="screen">
+        <param name="center" value="$(arg center)" />
+        <param name="major_axis" value="$(arg major_axis)" />
+        <param name="minor_axis" value="$(arg minor_axis)" />
+        <param name="pitch_axis" value="$(arg pitch_axis)" />
+        <param name="plane" value="$(arg plane)" />
+        <param name="frequency" value="$(arg frequency)" />
+        <param name="base_frame" value="$(arg base_frame)" />
+    </node>
+</launch>

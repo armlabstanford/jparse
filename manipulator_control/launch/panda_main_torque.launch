@@ -1,0 +1,30 @@
+<launch>
+
+    <arg name="position_only" default="false" />
+    <!-- The options are "JParse", "JacobianPseudoInverse" (basic); "JacobianDampedLeastSquares"; "JacobianTranspose"; "JacobianNullspaceDecoupled"  -->
+    <arg name="method" default="JParse" />
+        <!-- Is sim or not -->
+    <arg name="is_sim" default="False" />
+    <!-- Set the phi_gain, default of 15 is stable -->
+    <arg name="phi_gain_position" default="3.0" />
+    <arg name="phi_gain_angular" default="3.0" />
+
+    <!-- Boolean variable to control whether to show JParse ellipses -->
+    <arg name="show_jparse_ellipses" default="False" />
+    <!-- Set the jparse_gamma -->
+    <arg name="jparse_gamma" default="0.2" />
+
+    <node name="panda_torque_main_experiment" pkg="manipulator_control" type="panda_torque_main_experiment.py" ns="panda" output="screen">
+        <!-- Add any necessary parameters or arguments here -->
+        <param name="position_only" value="$(arg position_only)" />
+        <param name="method" value="$(arg method)" />
+        <remap from="/joint_states" to="/panda/joint_states"/>
+        <param name="base_link_name" value="panda_1_link0"/>
+        <param name="end_link_name" value="panda_1_hand"/>
+        <param name="is_sim" value="$(arg is_sim)" />
+        <param name="phi_gain_position" value="$(arg phi_gain_position)" />
+        <param name="phi_gain_angular" value="$(arg phi_gain_angular)" />
+        <param name="show_jparse_ellipses" value="$(arg show_jparse_ellipses)" />
+        <param name="jparse_gamma" value="$(arg jparse_gamma)" />
+    </node>
+</launch>

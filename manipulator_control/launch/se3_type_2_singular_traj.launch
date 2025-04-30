@@ -1,0 +1,43 @@
+<launch>
+    <!-- Center for Xarm trajectory -->
+
+    <!-- Argument for robot type -->
+    <arg name="robot" default="xarm" />
+
+    <!-- Directly overhead to pass over singularity -->
+    <arg name="center" value="$(eval '[0.0, 0.0, 0.7]' if robot == 'panda' else '[0.0, 0.0, 0.5]')" />
+    <arg name="major_axis" default="0.15" />
+    <arg name="minor_axis" value="0.0"/>
+    <arg name="pitch_axis" default="0.0" />
+    <!-- Parameters for orientation trajectory -->
+    <arg name="orientation_major_axis" default="0.0" />
+    <arg name="orientation_minor_axis" default="0.0" />
+    <arg name="orientation_frequency" default="0.1" />
+    <!-- Frequency of trajectory -->
+    <arg name="frequency" default="0.05" />
+
+    <arg name="plane" default="xy" />
+
+    <!-- Argument for recording key points only -->
+    <arg name="key_points_only_bool" default="false" doc="Set to 'true' to record key points only, 'false' to record all data"/>
+    <arg name="use_rotation" default="true" doc="Set to 'true' to use rotation in the trajectory, 'false' otherwise"/>
+
+    <!-- Conditional base_frame based on robot type -->
+    <arg name="base_frame" value="$(eval 'panda_1_link0' if robot == 'panda' else 'link_base')" />
+
+    <!-- Launch the node -->
+    <node pkg="manipulator_control" type="se3_trajectory_generator.py" name="se3_trajectory_generator" output="screen">
+        <param name="center" value="$(arg center)" />
+        <param name="major_axis" value="$(arg major_axis)" />
+        <param name="minor_axis" value="$(arg minor_axis)" />
+        <param name="pitch_axis" value="$(arg pitch_axis)" />
+        <param name="plane" value="$(arg plane)" />
+        <param name="frequency" value="$(arg frequency)" />
+        <param name="orientation_major_axis" value="$(arg orientation_major_axis)" />
+        <param name="orientation_minor_axis" value="$(arg orientation_minor_axis)" />
+        <param name="orientation_frequency" value="$(arg orientation_frequency)" />
+        <param name="base_frame" value="$(arg base_frame)" />
+        <param name="key_points_only_bool" value="$(arg key_points_only_bool)" />
+        <param name="use_rotation" value="$(arg use_rotation)" />
+    </node>
+</launch>

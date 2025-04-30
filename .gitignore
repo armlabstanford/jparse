@@ -1,0 +1,9 @@
+# Ignore all bagfiles
+*.bag
+*.DS_Store
+*.pyc
+*.png
+*.html
+*.pdf
+*.mp4
+*.avi

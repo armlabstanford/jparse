@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="run_demo" default="false" doc="If true, perform the demo after launch"/>
+  <arg name="paused" default="false" doc="Starts gazebo in paused mode" />
+  <arg name="gui" default="true" doc="Starts gazebo gui" />
+  <arg name="effort_control" default="false"/>
+  <arg name="velocity_control" default="false"/>
+  <arg name="add_gripper" default="false" />
+  <arg name="add_vacuum_gripper" default="false" />
+  <arg name="namespace" default="xarm"/>
+  <arg name="model1300" default="false" />
+  <arg name="add_realsense_d435i" default="false" />
+  <arg name="add_d435i_links" default="false" />
+  <arg name="robot_sn" default="" />
+
+  <arg name="xarm_velocity_control" value="$(eval arg('velocity_control') and not arg('run_demo'))" />
+  
+  <rosparam file="$(find xarm7_moveit_config)/config/xarm7_params.yaml" command="load" ns="$(arg namespace)"/>
+  <rosparam if="$(arg add_gripper)" file="$(find xarm_controller)/config/gripper/gripper_gazebo_ros_control.yaml" command="load"/>
+  <!-- startup simulated world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find xarm_gazebo)/worlds/xarm_example1_table.world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="gui" value="$(arg gui)"/>
+  </include>
+
+  <!-- send robot urdf to param server, joint limit may be overwritten if use moveit planner -->
+  <param name="robot_description" command="$(find xacro)/xacro
+    --inorder '$(find xarm_description)/urdf/xarm_device.urdf.xacro' robot_type:=xarm dof:=7
+    add_gripper:=$(arg add_gripper) add_vacuum_gripper:=$(arg add_vacuum_gripper)
+    effort_control:=$(arg effort_control) velocity_control:=$(arg xarm_velocity_control) 
+    model1300:=$(arg model1300)
+    add_realsense_d435i:=$(arg add_realsense_d435i)
+    add_d435i_links:=$(arg add_d435i_links)
+    robot_sn:=$(arg robot_sn)
+    hw_ns:=$(arg namespace)
+    " />
+
+  <!-- spawn robot model in gazebo, located on the table, -gazebo_namespace defaults to be /gazebo -->
+  <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model"
+    respawn="false" output="screen"
+    args="-gazebo_namespace /gazebo -urdf -model xarm7 -x -0.2 -y -0.6 -z 1.021 -Y 1.571 -param robot_description"/>
+
+
+    <rosparam file="$(find xarm_controller)/config/xarm7/xarm7_controllers.yaml" command="load" ns="$(arg namespace)"/>
+  <!-- Load trajectory controller for xArm by default -->
+  <arg name="robot_controller_name" value="$(eval 'xarm7_velo_traj_controller' if arg('velocity_control') else 'xarm7_traj_controller')" />
+  <node unless="$(arg run_demo)"
+    name="traj_controller_spawner"
+    pkg="controller_manager"
+    type="controller_manager"
+    respawn="false"
+    output="screen"
+    ns="/$(arg namespace)"
+    args="spawn $(arg robot_controller_name) joint_state_controller"/>
+
+  <!-- run_demo: load the position controllers -->
+  <node if="$(arg run_demo)" name="position_controller_spawner"
+    pkg="controller_manager"
+    type="spawner"
+    respawn="false"
+    output="screen"
+    ns="/$(arg namespace)"
+    args="joint1_position_controller joint2_position_controller
+          joint3_position_controller joint4_position_controller
+          joint5_position_controller joint6_position_controller
+          joint7_position_controller joint_state_controller"/>
+
+  <rosparam if="$(arg add_gripper)" file="$(find xarm_controller)/config/gripper/gripper_controllers.yaml" command="load" ns="$(arg namespace)"/>
+  <arg name="gripper_controller_name" value="$(eval 'gripper_velo_traj_controller' if arg('velocity_control') else 'gripper_traj_controller')" />
+  <node if="$(arg add_gripper)" name="gripper_controller_spawner"
+    pkg="controller_manager"
+    type="spawner"
+    respawn="false"
+    output="screen"
+    ns="/$(arg namespace)"
+    args="$(arg gripper_controller_name) "/>
+
+  <!-- convert joint states to TF transforms for rviz, etc -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+    respawn="false" output="screen">
+    <remap from="joint_states" to="$(arg namespace)/joint_states" />
+  </node>
+
+
+</launch>

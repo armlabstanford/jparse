@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>manipulator_control</name>
+  <version>0.0.0</version>
+  <description>The manipulator_control package</description>
+  <maintainer email="monroek@stanford.edu">Monroe Kennedy</maintainer>
+  <author email="monroek@stanford.edu">Monroe Kennedy</author>
+
+
+  <license>MIT</license>
+  <!-- <url type="website">https://jparse-manip.github.io/</url> -->
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>catkin_simple</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+
+  <depend>std_msgs</depend>
+  <depend>tf</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf_conversions</depend>
+  <depend>eigen_conversions</depend>
+  <depend>visualization_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>robot_controllers_msgs</depend>
+  <depend>kdl_parser</depend>
+  <depend>orocos_kdl</depend>
+  <depend>urdf</depend>
+  <depend>robot_controllers_interface</depend>
+  <depend>gazebo_msgs</depend>
+  <depend>moveit_core</depend>
+  <depend>kortex_driver</depend>
+
+  <build_depend>message_generation</build_depend>
+
+  <exec_depend>moveit_commander</exec_depend>
+  <exec_depend>actionlib_msgs</exec_depend>
+
+
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rospy</exec_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>

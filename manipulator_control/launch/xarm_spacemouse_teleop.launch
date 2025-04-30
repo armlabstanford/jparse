@@ -1,0 +1,9 @@
+<launch>
+    <!-- Declare parameters with default values -->
+    <arg name="robot_ip" default="192.168.1.233" />
+
+    <node name="xarm_spacemouse" pkg="manipulator_control" type="xarm_spacemouse.py"  output="screen">
+        <param name="robot_ip" value="$(arg robot_ip)" />
+    </node>
+
+</launch>

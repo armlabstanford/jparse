@@ -1,0 +1,17 @@
+<launch>
+    <!-- Declare parameters with default values -->
+    <arg name="robot_ip" default="192.168.1.233" />
+    <arg name="using_spacemouse" default="true" />
+    <arg name="report_type" default="normal" />
+    <arg name="add_gripper" default="false" />
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find manipulator_control)/rviz/jparse_final.rviz" />
+
+    <!-- Include the realMove_exec.launch file and pass arguments -->
+    <include file="$(find xarm7_moveit_config)/launch/realMove_exec.launch">
+        <arg name="robot_ip" value="$(arg robot_ip)" />
+        <arg name="velocity_control" value="$(arg using_spacemouse)" />
+        <arg name="report_type" value="$(arg report_type)" />
+        <arg name="add_gripper" value="$(arg add_gripper)" />
+    </include>
+</launch>

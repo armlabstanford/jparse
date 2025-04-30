@@ -1,0 +1,8 @@
+float64 gamma
+float64 singular_direction_gain_position
+float64 singular_direction_gain_angular
+string  base_link_name
+string  end_link_name
+---
+manipulator_control/Matrow[] jparse
+manipulator_control/Matrow[] jsafety_nullspace

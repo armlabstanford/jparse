@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find kortex_driver)/launch/kortex_driver.launch" >
+  <arg name="camera_name" value="/camera/color" />
+  <arg name="image_topic" value="image_raw" />
+  </include>
+  
+  <group ns="my_gen3">
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find manipulator_control)/rviz/kinova_gen3.rviz" />
+  </group>
+
+
+</launch>

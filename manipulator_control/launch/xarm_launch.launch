@@ -1,0 +1,9 @@
+<launch>
+    <include file="$(find xarm_gazebo)/launch/xarm7_beside_table.launch">
+        <arg name="velocity_control" value="false"/>
+        <arg name="add_gripper" value="false"/>
+    </include>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find manipulator_control)/rviz/xarm_rviz.rviz" />
+
+</launch>
