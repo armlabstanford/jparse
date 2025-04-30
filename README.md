@@ -1,6 +1,10 @@
 # J-PARSE: Jacobian-based Projection Algorithm for Resolving Singularities Effectively in Inverse Kinematic Control of Serial Manipulators
 
-![JPARSE splash](images/jparse_splash.png)
+<img
+  src="images/jparse_splash.png"
+  alt="JPARSE splash"
+  style="width:60%;"
+/>
 
 ![JPARSE Concept diagram](images/jparse_concept_fig.png)
 
