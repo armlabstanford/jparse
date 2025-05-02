@@ -42,6 +42,16 @@ docker run --privileged -p 6080:80 --shm-size=512m -v <path to jparse repo>:/hom
 
 ```
 
+### Note
+
+We are working on a Python package that you can easily import into your project. We envision the below:
+
+```py
+import jparse
+```
+
+Stay tuned!
+
 ### Dependencies
 *Note: these are handled in the Docker image directly, and are already installed!*
 
