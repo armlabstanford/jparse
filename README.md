@@ -1,28 +1,49 @@
-# J-PARSE: Jacobian-based Projection Algorithm for Resolving Singularities Effectively in Inverse Kinematic Control of Serial Manipulators
+# 🦾 J-PARSE: Jacobian-based Projection Algorithm for Resolving Singularities Effectively in Inverse Kinematic Control of Serial Manipulators
+
+
+### [Shivani Guptasarma](https://www.linkedin.com/in/shivani-guptasarma/), [Matthew Strong](https://peasant98.github.io/), [Honghao Zhen](https://www.linkedin.com/in/honghao-zhen/), and [Monroe Kennedy III](https://monroekennedy3.com/)
+
+
+_In Submission_
 
 <img
-  src="images/jparse_splash.png"
+  src="images/splash.png"
   alt="JPARSE splash"
   style="width:100%;"
 />
 
-![JPARSE Concept diagram](images/jparse_concept_fig.png)
+<!-- ![JPARSE Concept diagram](images/jparse_concept_fig.png)
+ -->
 
-
+[![Project](https://img.shields.io/badge/Project_Page-J_PARSE-blue)](https://jparse-manip.github.io)
+[![ArXiv](https://img.shields.io/badge/Arxiv-J_PARSE-red)](https://arxiv.org/abs/2505.00306) 
 
 ## Quick Start with Docker
 
-To build the Docker image for the task:
+To build the Docker image for the our environment, we use VNC docker, which allows for a graphical user interface displayable in the browser.
+
+### Use the Public Docker Image (Recommended)
+
+We have created a public Docker image that you can pull! 
+Steps:
 
 ```sh
+docker pull peasant98/jparse
+docker run --privileged -p 6080:80 --shm-size=512m -v <path to jparse repo>:/home/ubuntu/Desktop/jparse_ws/src peasant98/jparse
+```
+
+### Build the Image Yourself
+
+You can build the docker image yourself! To do so, follow the below steps:
+```sh
 cd Docker
-docker build -t jparsee .
-docker run --privileged -p 6080:80 --shm-size=512m -v <path to jparse workspace>:/home/ubuntu/Desktop/jparse peasant98/vnc-gazebo-ros
+docker build -t jparse .
+docker run --privileged -p 6080:80 --shm-size=512m -v <path to jparse repo>:/home/ubuntu/Desktop/jparse_ws/src jparse
 
 ```
 
-### Dependences
-*Note: these are handled in Docker image directly.*
+### Dependencies
+*Note: these are handled in the Docker image directly, and are already installed!*
 
 1. [Catkin Simple](https://github.com/catkin/catkin_simple): https://github.com/catkin/catkin_simple
 2. [HRL KDL](https://github.com/armlabstanford/hrl-kdl): https://github.com/armlabstanford/hrl-kdl 
@@ -112,7 +133,7 @@ roslaunch manipulator_control kinova_vel_control.launch is_sim:=true show_jparse
 
 You can also run JParse with a human teleoperator using a SpaceMouse controller. This will allow for a fun sandbox to verify JParse. 
 
-We plan to extend this to a simple learning policy as well.
+We plan to extend this to a simple learning policy as well. The code for that (collecting data, training a policy, and running inference) will be published soon!
 
 To run, you can run
 
@@ -157,7 +178,7 @@ singular_direction_gain_angular: 2.0
 base_link_name: 'link_base'
 end_link_name: 'link_eef'" 
 ```
-To see versitility, simply change the kinematic chain for the JParse solution for that segment. To view options for your kinematic tree:
+To see versatility, simply change the kinematic chain for the JParse solution for that segment. To view options for your kinematic tree:
 ```bash
 rosrun rqt_tf_tree rqt_tf_tree
 ```
@@ -174,36 +195,3 @@ This has same parameters as the python version, but with the service versus mess
 | `phi_gain_position`   | gain on position component|
 | `phi_gain_angular`   | gain on angular component|
 | `is_sim`   | use of sim versus real (boolean)|
-
-
-
-## Simulated Torque Control (under development - future work) 
-*We are actively working on torque control for J-PARSE that provides all of the rigorous performance of velocity control. We do not recommend running this on a real robot yet. But this provides a preview of performance in torque control scenarios.*
-
-For torque, we use the Panda robot. To run the Panda: 
-```bash
-roslaunch manipulator_control franka_launch.launch 
-```
-
-#### Trajectory Selection
-Next run the desired trajectory generator, ellipse which tests the boundaries of motion: 
-```bash
-roslaunch manipulator_control full_pose_trajectory.launch robot:=panda
-```
-or type-2 singularity (passing above the base):
-```bash
-roslaunch manipulator_control se3_type_2_singular_traj.launch robot:=panda
-```
-or line-extended keypoints (from above the base, to reaching out in front beyond reach)
-```bash
-roslaunch manipulator_control line_extended_singular_traj.launch robot:=panda key_points_only_bool:=true frequency:=0.05 use_rotation:=false
-```
-
-#### Select Control
-Finally run the control with the desired method:
-```bash
-roslaunch manipulator_control panda_main_torque.launch is_sim:=true phi_gain_position:=3.0 phi_gain_angular:=3.0 jparse_gamma:=0.2 method:=JParse
-```
-
-The method options are: "JParse", "JacobianPseudoInverse" (basic); "JacobianDampedLeastSquares"; "JacobianTranspose"; "JacobianNullspaceDecoupled"
-
