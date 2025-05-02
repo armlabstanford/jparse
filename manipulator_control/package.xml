@@ -36,6 +36,9 @@
   <depend>gazebo_msgs</depend>
   <depend>moveit_core</depend>
   <depend>kortex_driver</depend>
+  <depend>kortex_gazebo</depend>
+  <depend>kortex_vision</depend>
+
 
   <build_depend>message_generation</build_depend>
 
