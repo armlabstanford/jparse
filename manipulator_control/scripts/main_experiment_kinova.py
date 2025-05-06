@@ -670,7 +670,7 @@ class ArmController:
                     J_method, J_nullspace = self.jacobian_calculator.jacobian_dci(q=q)
 
                 
-                manip_measure = self.jacobian_calculator.manipulatbility_measure(q)
+                manip_measure = self.jacobian_calculator.manipulability_measure(q)
                 self.manip_measure_pub.publish(manip_measure)
                 inverse_cond_number = self.jacobian_calculator.inverse_condition_number(q)
                 self.inverse_cond_number.publish(inverse_cond_number)

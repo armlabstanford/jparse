@@ -110,7 +110,7 @@ class JParseClass(object):
         J_new =np.matrix(U)*Sfull*np.matrix(Vt)
         return J_new
 
-    def manipulatbility_measure(self, q=[], use_inv_cond_number=False):
+    def manipulability_measure(self, q=[], use_inv_cond_number=False):
         """
         This function computes the manipulability measure for the given joint configuration.
         """

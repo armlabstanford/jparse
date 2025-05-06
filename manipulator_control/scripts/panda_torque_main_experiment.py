@@ -372,7 +372,7 @@ class ArmController:
                 #Find jacobian dot
                 J_dot = self.jacobian_calculator.jacobian_dot(q=q, position_only=self.position_only, approx=True) #approximate method seems to work better than numerical differentiation
                 dq_vect = np.matrix(dq).T
-                manip_measure = self.jacobian_calculator.manipulatbility_measure(q)
+                manip_measure = self.jacobian_calculator.manipulability_measure(q)
                 self.manip_measure_pub.publish(manip_measure)
                 inverse_cond_number = self.jacobian_calculator.inverse_condition_number(q)
                 self.inverse_cond_number.publish(inverse_cond_number)
