@@ -17,7 +17,7 @@
     <!-- Boolean variable to control whether to show JParse ellipses -->
     <arg name="show_jparse_ellipses" default="True" />
     <!-- Set the jparse_gamma -->
-    <arg name="jparse_gamma" default="0.2" />
+    <arg name="jparse_gamma" default="0.1" />
     <!-- option to use space mouse-->
     <arg name="use_space_mouse" default="False" />
     <arg name="visual_servoing" default="False" />
