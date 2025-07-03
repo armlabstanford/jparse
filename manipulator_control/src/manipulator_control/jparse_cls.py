@@ -145,7 +145,7 @@ class JParseClass(object):
             return J_pinv, J_nullspace
         return J_pinv
 
-    def JParse(self, q=[], gamma=0.1, position_only=False, jac_nullspace_bool = False , singular_direction_gain_position=1, singular_direction_gain_angular=1, verbose=False, publish_jparse_ellipses=False, internal_marker_flag=False, end_effector_pose=None):
+    def JParse(self, q=[], gamma=0.1, position_only=False, jac_nullspace_bool = False , singular_direction_gain_position=1, singular_direction_gain_angular=1, verbose=False, publish_jparse_ellipses=False, internal_marker_flag=False, end_effector_pose=None, safety_only = False, safety_projection_only = False):
         """
         This function computes the JParse matrix for the given joint configuration and gamma value.
         This function should return the JParse matrix as a numpy array.
@@ -234,11 +234,17 @@ class JParseClass(object):
             #only shows position ellipses
             self.publish_position_Jparse_ellipses(q=q, gamma=gamma, jac_nullspace_bool=False, singular_direction_gain_position=singular_direction_gain_position, singular_direction_gain_angular=singular_direction_gain_angular, verbose=verbose, publish_jparse_ellipses=publish_jparse_ellipses, end_effector_pose=end_effector_pose)
 
-
-        if jac_nullspace_bool == True:
+        if jac_nullspace_bool == True and not safety_only and not safety_projection_only:
             #Find the nullspace of the jacobian
             J_safety_nullspace = np.eye(J_safety.shape[1]) - J_safety_pinv @ J_safety
+
             return J_parse, J_safety_nullspace
+        
+        if safety_only == True:
+            return J_safety_pinv
+        
+        if safety_projection_only == True:
+            return J_safety_pinv @ J_proj @ J_proj_pinv
 
         return J_parse
 
@@ -519,40 +525,6 @@ class JParseClass(object):
             return J_proj
         J_proj_nullspace = np.eye(J_proj.shape[1]) -   np.linalg.pinv(J_proj)@J_proj
         return J_proj, J_proj_nullspace
-
-    def jacobian_nullspace_decoupled(self, q=[], dq=[], identity_weight_matrix=False):
-        """
-        COMPARISON METHOD (not used in JPARSE)
-        This function computes the decoupled nullspace of the Jacobian matrix for the given joint configuration.
-        This method is described in the paper by Chang and Khatib (1995).
-        """
-        J_proj = self.jacobian_projection(q=q, gamma=0.05)
-        J = self.jacobian(q)
-        J_method = J.T
-        Mass_matrix = self.inertia(q)
-        if identity_weight_matrix == True:
-            #temporarily make the mass matrix the identity matrix (better performance than the actual mass matrix)
-            Mass_matrix = np.eye(Mass_matrix.shape[0])
-        Minv = np.linalg.inv(Mass_matrix)
-        Lambda = np.linalg.pinv(J_proj @ Minv @ J_proj.T)
-        J_bar = Minv @ J_proj.T @ Lambda
-        J_proj_nullspace = Mass_matrix - J.T @ J_bar.T @ Mass_matrix
-        #note that the objective and damping terms are not included in this implementation, they need to be multiplied by the nullspace matrix
-        return J_method, J_proj_nullspace
-    
-    def jacobian_dci(self, q=[], dq=[], identity_weight_matrix=False):
-        """
-        COMPARISON METHOD (not used in JPARSE)
-        This function computes the dynamically consistent generalized inverse 
-        """
-        J = self.jacobian(q)
-        J_proj = self.jacobian_projection(q=q, gamma=0.05)
-        Mass_matrix = self.inertia(q)
-        Minv = np.linalg.inv(Mass_matrix)
-        Lambda = np.linalg.pinv(J_proj @ Minv @ J_proj.T)
-        J_method = Minv @ J_proj.T @ Lambda
-        J_proj_nullspace = np.eye(J_proj.shape[1]) - J_method @ J
-        return J_method, J_proj_nullspace
 
 
 def main():
