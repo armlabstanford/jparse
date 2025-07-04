@@ -666,8 +666,6 @@ class ArmController:
                 elif method == "JacobianProjection":
                     J_proj, J_nullspace = self.jacobian_calculator.jacobian_projection(q=q, gamma=0.1, jac_nullspace_bool=True)
                     J_method = np.linalg.pinv(J_proj)
-                elif method == "JacobianDynamicallyConsistentInverse":
-                    J_method, J_nullspace = self.jacobian_calculator.jacobian_dci(q=q)
 
                 
                 manip_measure = self.jacobian_calculator.manipulability_measure(q)
