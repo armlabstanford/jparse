@@ -76,6 +76,8 @@ EOF
 BASHRC_PATH="$HOME/.bashrc"
 grep -F "source /opt/ros/$ROS_DISTRO/setup.bash" "$BASHRC_PATH" || echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> "$BASHRC_PATH"
 grep -F "source /ros_kortex_ws/devel/setup.bash" "$BASHRC_PATH" || echo "source /ros_kortex_ws/devel/setup.bash" >> "$BASHRC_PATH"
+grep -F "export CONAN_REVISIONS_ENABLED=1" "$BASHRC_PATH" || echo "export CONAN_REVISIONS_ENABLED=1" >> "$BASHRC_PATH"
+
 
 
 
