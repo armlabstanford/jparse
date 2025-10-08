@@ -15,17 +15,17 @@
     <arg name="pitch_axis" default="0.0" />
     <arg name="plane" default="xy" />
     
-      <!-- Frequency of trajectory -->
+    <!-- Frequency of trajectory -->
     <arg name="frequency" default="0.05" />
     <!-- Parameters for orientation trajectory -->
     <arg name="orientation_major_axis" default="0.5" />
     <arg name="orientation_minor_axis" default="0.3" />
     <arg name="orientation_frequency" default="0.1" />
 
-    <arg name="use_rotation" default="true" doc="Set to 'true' to use rotation in the trajectory, 'false' otherwise"/>
+    <arg name="use_rotation" default="false" doc="Set to 'true' to use rotation in the trajectory, 'false' otherwise"/>
 
     <!-- Argument for recording key points only -->
-    <arg name="key_points_only_bool" default="false" doc="Set to 'true' to record key points only, 'false' to record all data"/>
+    <arg name="key_points_only_bool" default="true" doc="Set to 'true' to record key points only, 'false' to record all data"/>
 
 
     <!-- Conditional base_frame based on robot type -->
