@@ -145,7 +145,7 @@ class JParseClass(object):
             return J_pinv, J_nullspace
         return J_pinv
 
-    def JParse(self, q=[], gamma=0.1, position_only=False, jac_nullspace_bool = False , singular_direction_gain_position=1, singular_direction_gain_angular=1, verbose=False, publish_jparse_ellipses=False, internal_marker_flag=False, end_effector_pose=None, safety_only = False, safety_projection_only = False):
+    def JParse(self, q=[], gamma=0.1, position_only=False, jac_nullspace_bool = False , ks = 1, singular_direction_gain_position=1, singular_direction_gain_angular=1, verbose=False, publish_jparse_ellipses=False, internal_marker_flag=False, end_effector_pose=None, safety_only = False, safety_projection_only = False, ):
         """
         This function computes the JParse matrix for the given joint configuration and gamma value.
         This function should return the JParse matrix as a numpy array.
@@ -207,11 +207,11 @@ class JParseClass(object):
                 gains = np.array([singular_direction_gain_position]*3, dtype=float)
             else:
                 gains = np.array([singular_direction_gain_position]*3 + [singular_direction_gain_angular]*3, dtype=float)
-            Kp_singular = np.diag(gains)
+            # Kp_singular = np.diag(gains)
             # Now put it all together:
-            Phi_singular = U_new_sing @ Phi_mat @ U_new_sing.T @ Kp_singular
+            Phi_singular = U_new_sing @ Phi_mat @ U_new_sing.T #@ Kp_singular
             if verbose == True:
-                print("Kp_singular:", Kp_singular)            
+                # print("Kp_singular:", Kp_singular)            
                 print("Phi_mat shape:", Phi_mat.shape, "Phi_mat:", Phi_mat)
                 print("U_new_sing shape:", U_new_sing.shape, "U_new_sing:", U_new_sing)
         
