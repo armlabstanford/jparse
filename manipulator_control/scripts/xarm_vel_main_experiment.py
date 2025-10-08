@@ -360,7 +360,7 @@ class ArmController:
 
         while not rospy.is_shutdown():
 
-            if self.joint_states and self.target_pose:
+            if (self.joint_states and self.target_pose and not self.use_space_mouse) or (self.use_space_mouse and self.joint_states and self.space_mouse_command):
                 t = rospy.Time.now()
                 # obtain the current joints
                 q = []
