@@ -203,10 +203,10 @@ class JParseClass(object):
             #construct the new U, as there were singular directions
             U_new_sing = np.matrix(np.concatenate(U_new_sing,axis=0)).T
             Phi_mat = np.matrix(np.diag(Phi))
-            if position_only == True:
-                gains = np.array([singular_direction_gain_position]*3, dtype=float)
-            else:
-                gains = np.array([singular_direction_gain_position]*3 + [singular_direction_gain_angular]*3, dtype=float)
+            # if position_only == True:
+            #     gains = np.array([singular_direction_gain_position]*3, dtype=float)
+            # else:
+            #     gains = np.array([singular_direction_gain_position]*3 + [singular_direction_gain_angular]*3, dtype=float)
             # Kp_singular = np.diag(gains)
             # Now put it all together:
             Phi_singular = U_new_sing @ Phi_mat @ U_new_sing.T #@ Kp_singular
