@@ -4,6 +4,7 @@ FROM tiryoh/ros-desktop-vnc:noetic
 
 RUN set -x \
 	&& apt-get update \
+	&& apt-get install -y build-essential \
 	&& apt-get install -y ros-noetic-moveit \
 	&& apt-get install -y ros-noetic-moveit-servo \
 	&& apt-get install -y ros-noetic-moveit-visual-tools \
@@ -25,7 +26,7 @@ RUN set -x \
 RUN rosdep update \
         && echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 
-RUN apt-get update && apt-get install -y ros-noetic-ros-control ros-noetic-ros-controllers
+RUN apt-get update && apt-get install -y ros-noetic-ros-control ros-noetic-ros-controllers ros-noetic-rgbd-launch ros-noetic-joy
 
 
 RUN /bin/bash -c 'conan config set general.revisions_enabled=1'
@@ -54,6 +55,7 @@ RUN apt install -y ros-$ROS_DISTRO-gazebo-ros-control ros-${ROS_DISTRO}-rospy-me
 RUN apt install -y ros-${ROS_DISTRO}-libfranka
 
 RUN cd / && mkdir -p panda_ws/src && cd panda_ws/src
+RUN apt-get update && apt-get install -y ros-${ROS_DISTRO}-boost-sml
 RUN source /opt/ros/noetic/setup.bash && cd /panda_ws/src && git clone -b noetic-devel https://github.com/justagist/panda_simulator
 
 RUN cd /panda_ws/src/panda_simulator && ./build_ws.sh
@@ -71,5 +73,8 @@ RUN apt install ros-noetic-apriltag-ros -y
 COPY ./entrypoint.sh /
 ENTRYPOINT [ "/bin/bash", "-c", "/entrypoint.sh" ]
 
+RUN ln -sf /usr/bin/gcc /usr/bin/cc
+
 ENV USER ubuntu
 ENV PASSWD ubuntu
+ENV CONAN_REVISIONS_ENABLED 1

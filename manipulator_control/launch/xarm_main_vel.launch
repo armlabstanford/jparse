@@ -20,6 +20,7 @@
     <arg name="jparse_gamma" default="0.02" />
     <!-- option to use space mouse-->
     <arg name="use_space_mouse" default="False" />
+    <arg name="use_space_mouse_jparse" default="False" />
 
     <node name="xarm_vel_main_experiment" pkg="manipulator_control" type="xarm_vel_main_experiment.py"  output="screen">
         <!-- Add any necessary parameters or remappings here -->
@@ -35,5 +36,6 @@
         <param name="show_jparse_ellipses" value="$(arg show_jparse_ellipses)" />
         <param name="jparse_gamma" value="$(arg jparse_gamma)" />
         <param name="use_space_mouse" value="$(arg use_space_mouse)" />
+        <param name="use_space_mouse_jparse" value="$(arg use_space_mouse_jparse)" />
     </node>
 </launch>
