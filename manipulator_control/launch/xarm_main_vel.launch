@@ -34,6 +34,7 @@
         <param name="is_sim" value="$(arg is_sim)" />
         <param name="phi_gain_position" value="$(arg phi_gain_position)" />
         <param name="phi_gain_angular" value="$(arg phi_gain_angular)" />
+        <param name="ks" value="$(arg ks)" />
         <param name="robot_ip" value="$(arg robot_ip)" />
         <param name="show_jparse_ellipses" value="$(arg show_jparse_ellipses)" />
         <param name="jparse_gamma" value="$(arg jparse_gamma)" />

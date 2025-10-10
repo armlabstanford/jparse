@@ -45,7 +45,8 @@ class ArmController:
         self.phi_gain = rospy.get_param('~phi_gain', 10) #gain for the phi term in the JParse method
         self.phi_gain_position = rospy.get_param('~phi_gain_position', 15) #gain for the phi term in the JParse method
         self.phi_gain_angular = rospy.get_param('~phi_gain_angular', 15) #gain for the phi term in the JParse method
-        
+        self.ks = rospy.get_param('~ks', 1.0) #scaling factor for the phi term in the JParse method
+
         self.jparse_gamma = rospy.get_param('~jparse_gamma', 0.1) #gamma for the JParse method
 
         self.use_space_mouse = rospy.get_param('~use_space_mouse', False) #boolean to control if the space mouse is used or not
@@ -382,26 +383,26 @@ class ArmController:
                 elif method == "JParse":
                     # The JParse method takes in the joint angles, gamma, position_only, and singular_direction_gain
                     if self.show_jparse_ellipses == True:
-                        J_method, J_nullspace = self.jacobian_calculator.JParse(q=q, gamma=self.jparse_gamma, position_only=self.position_only, singular_direction_gain_position=self.phi_gain_position, singular_direction_gain_angular=self.phi_gain_angular,  jac_nullspace_bool=True, publish_jparse_ellipses=True, end_effector_pose=self.EndEffectorPose(q), verbose=False)                        
+                        J_method, J_nullspace = self.jacobian_calculator.JParse(q=q, gamma=self.jparse_gamma, ks=self.ks, position_only=self.position_only, singular_direction_gain_position=self.phi_gain_position, singular_direction_gain_angular=self.phi_gain_angular,  jac_nullspace_bool=True, publish_jparse_ellipses=True, end_effector_pose=self.EndEffectorPose(q), verbose=False)                        
                     else:
-                        J_method, J_nullspace = self.jacobian_calculator.JParse(q=q, gamma=self.jparse_gamma, position_only=self.position_only, singular_direction_gain_position=self.phi_gain_position,singular_direction_gain_angular=self.phi_gain_angular, jac_nullspace_bool=True)
+                        J_method, J_nullspace = self.jacobian_calculator.JParse(q=q, gamma=self.jparse_gamma, ks=self.ks, position_only=self.position_only, singular_direction_gain_position=self.phi_gain_position,singular_direction_gain_angular=self.phi_gain_angular, jac_nullspace_bool=True)
                 elif method == "JacobianDampedLeastSquares":
                     J_method, J_nullspace = self.jacobian_calculator.jacobian_damped_least_squares(q=q, damping=0.1, jac_nullspace_bool=True) #dampening of 0.1 works very well, 0.8 shows clear error
                 elif method == "JacobianProjection":
-                    J_proj, J_nullspace = self.jacobian_calculator.jacobian_projection(q=q, gamma=0.1, jac_nullspace_bool=True)
+                    J_proj, J_nullspace = self.jacobian_calculator.jacobian_projection(q=q, gamma=self.gamma, jac_nullspace_bool=True, ks=self.ks)
                     J_method = np.linalg.pinv(J_proj)
                 elif method == "JacobianSafety":
                     # The JParse method takes in the joint angles, gamma, position_only, and singular_direction_gain
                     if self.show_jparse_ellipses == True:
-                        J_method, J_nullspace = self.jacobian_calculator.JParse(q=q, gamma=self.jparse_gamma, position_only=self.position_only, singular_direction_gain_position=self.phi_gain_position, singular_direction_gain_angular=self.phi_gain_angular,  jac_nullspace_bool=True, publish_jparse_ellipses=True, end_effector_pose=self.EndEffectorPose(q), verbose=False, safety_only=True)                        
+                        J_method, J_nullspace = self.jacobian_calculator.JParse(q=q, gamma=self.jparse_gamma, ks=self.ks, position_only=self.position_only, singular_direction_gain_position=self.phi_gain_position, singular_direction_gain_angular=self.phi_gain_angular,  jac_nullspace_bool=True, publish_jparse_ellipses=True, end_effector_pose=self.EndEffectorPose(q), verbose=False, safety_only=True)                        
                     else:
-                        J_method, J_nullspace = self.jacobian_calculator.JParse(q=q, gamma=self.jparse_gamma, position_only=self.position_only, singular_direction_gain_position=self.phi_gain_position,singular_direction_gain_angular=self.phi_gain_angular, jac_nullspace_bool=True, safety_only=True)
+                        J_method, J_nullspace = self.jacobian_calculator.JParse(q=q, gamma=self.jparse_gamma, ks=self.ks, position_only=self.position_only, singular_direction_gain_position=self.phi_gain_position,singular_direction_gain_angular=self.phi_gain_angular, jac_nullspace_bool=True, safety_only=True)
                 elif method == "JacobianSafetyProjection":
                     # The JParse method takes in the joint angles, gamma, position_only, and singular_direction_gain
                     if self.show_jparse_ellipses == True:
-                        J_method, J_nullspace = self.jacobian_calculator.JParse(q=q, gamma=self.jparse_gamma, position_only=self.position_only, singular_direction_gain_position=self.phi_gain_position, singular_direction_gain_angular=self.phi_gain_angular,  jac_nullspace_bool=True, publish_jparse_ellipses=True, end_effector_pose=self.EndEffectorPose(q), verbose=False, safety_projection_only=True)                        
+                        J_method, J_nullspace = self.jacobian_calculator.JParse(q=q, gamma=self.jparse_gamma, ks=self.ks, position_only=self.position_only, singular_direction_gain_position=self.phi_gain_position, singular_direction_gain_angular=self.phi_gain_angular,  jac_nullspace_bool=True, publish_jparse_ellipses=True, end_effector_pose=self.EndEffectorPose(q), verbose=False, safety_projection_only=True)                        
                     else:
-                        J_method, J_nullspace = self.jacobian_calculator.JParse(q=q, gamma=self.jparse_gamma, position_only=self.position_only, singular_direction_gain_position=self.phi_gain_position,singular_direction_gain_angular=self.phi_gain_angular, jac_nullspace_bool=True, safety_projection_only=True)
+                        J_method, J_nullspace = self.jacobian_calculator.JParse(q=q, gamma=self.jparse_gamma, ks=self.ks, position_only=self.position_only, singular_direction_gain_position=self.phi_gain_position,singular_direction_gain_angular=self.phi_gain_angular, jac_nullspace_bool=True, safety_projection_only=True)
 
 
                 manip_measure = self.jacobian_calculator.manipulability_measure(q)
