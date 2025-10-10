@@ -1,0 +1,15 @@
+<launch>
+
+    <!-- Specify if the arm is xarm (velocity) or panda (torque) -->
+    <arg name="robot_type" default="xarm" />
+    <arg name="save_figures" default="false" />
+    <!-- set a boolean modified_bag-->
+    <arg name="modified_bag" default="false" />
+
+    <node name="data_plotter" pkg="manipulator_control" type="data_plotter.py" output="screen">
+        <!-- Add any necessary parameters or remappings here -->
+        <param name="robot_type" value="$(arg robot_type)" />
+        <param name="save_figures" value="$(arg save_figures)" />
+        <param name="modified_bag" value="$(arg modified_bag)" />
+    </node>
+</launch>
