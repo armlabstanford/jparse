@@ -191,8 +191,9 @@ class JParseClass(object):
             if adjusted_condition_numbers[col] <= gamma:
                 set_empty_bool = False
                 U_new_sing.append(np.matrix(U[:,col]).T)
-                Phi.append(adjusted_condition_numbers[col]/gamma) #division by gamma for s/(s_max * gamma), gives smooth transition for Kp =1.0; 
-
+                Phi.append(ks*adjusted_condition_numbers[col]/gamma) #division by gamma for s/(s_max * gamma), gives smooth transition for Kp =1.0; 
+                rospy.loginfo("Singular direction found, adjusted condition number: %f", adjusted_condition_numbers[col])
+        
         #set an empty Phi_singular matrix, populate if there were any adjusted
         #condition numbers below the threshold
         Phi_singular = np.zeros(U.shape) #initialize the singular projection matrix  
@@ -225,13 +226,15 @@ class JParseClass(object):
             J_parse = J_safety_pinv @ J_proj @ J_proj_pinv
 
         #Publish the JParse ellipses
-        ellipse_dict = {"J_safety_u": U, "J_safety_s": S_new_safety, "J_proj_u": U_new_proj, "J_proj_s": S_new_proj, "J_singular_u": U_new_sing, "J_singular_s": Phi}     
+        ellipse_dict = {"J_safety_u": U, "J_safety_s": S_new_safety, "J_proj_u": U_new_proj, "J_proj_s": S_new_proj, "J_singular_u": U_new_sing, "J_singular_s": Phi}   
+        rospy.loginfo("Phi: %s", Phi)
         if internal_marker_flag == True:
             #this is internal for jparse marker display
             return ellipse_dict
         
         if publish_jparse_ellipses == True:
             #only shows position ellipses
+            # rospy.loginfo("U_new_sing shape: %s", U_new_sing.shape)
             self.publish_position_Jparse_ellipses(q=q, gamma=gamma, jac_nullspace_bool=False, singular_direction_gain_position=singular_direction_gain_position, singular_direction_gain_angular=singular_direction_gain_angular, verbose=verbose, publish_jparse_ellipses=publish_jparse_ellipses, end_effector_pose=end_effector_pose)
 
         if jac_nullspace_bool == True and not safety_only and not safety_projection_only:
@@ -248,10 +251,7 @@ class JParseClass(object):
 
         return J_parse
 
-    '''
-    The following are only useful for the dynamics terms (e.g. torque control)
-    They are not required to obtain the JParse matrix
-    '''
+
     def publish_position_Jparse_ellipses(self, q=[], gamma=0.1, jac_nullspace_bool = False , singular_direction_gain_position=1, singular_direction_gain_angular=1, verbose=False, publish_jparse_ellipses=False, end_effector_pose=None):
         """ 
         this function displays the key ellipses for the JParse
@@ -269,7 +269,10 @@ class JParseClass(object):
             #Pass in the full U to ensure the ellipse shows up at all, we will handle with approximate scaling for singular directions (make them 0.001)
             J_proj_marker = self.generate_jparse_ellipses(mat_type="J_proj", U_mat=ellipse_dict["J_safety_u"], S_vect=ellipse_dict["J_proj_s"], marker_ns="J_proj", end_effector_pose=end_effector_pose, frame_id=frame_id)
             ellipse_marker_array.markers.append(J_proj_marker[0])
-        #if there are singular directions, add them        
+        #if there are singular directions, add them
+        # rospy.loginfo("Number of singular directions to plot: %d", len(ellipse_dict["J_singular_s"]))
+        rospy.loginfo(ellipse_dict["J_singular_s"])
+        rospy.loginfo(gamma)
         J_singular_marker = self.generate_jparse_ellipses(mat_type="J_singular", U_mat=ellipse_dict["J_singular_u"], S_vect=ellipse_dict["J_singular_s"], end_effector_pose=end_effector_pose, frame_id=frame_id)
         if len(J_singular_marker) > 0:
             for idx in range(len(J_singular_marker)):
