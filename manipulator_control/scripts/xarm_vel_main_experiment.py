@@ -553,10 +553,8 @@ class ArmController:
         else:
             # this is on the real robot, directly send joint velociteies
             # Send joint velocities to the arm
-            # log the velocities
             rospy.loginfo("Joint velocities: %s", joint_vel_list)
-            if self.use_space_mouse_jparse:
-                self.arm.vc_set_joint_velocity(joint_vel_list, is_radian=True)
+            self.arm.vc_set_joint_velocity(joint_vel_list, is_radian=True)
 
 
 if __name__ == '__main__':
