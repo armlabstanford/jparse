@@ -9,7 +9,7 @@
     <!-- Is sim or not -->
     <arg name="is_sim" default="True"/>
     <!-- robot ip -->
-    <arg name="robot_ip" default="192.168.1.233" />
+    <arg name="robot_ip" default="192.168.1.235" />
     <!-- Set the phi_gain - gain in JParse singular direction -->
     
     <!-- 
