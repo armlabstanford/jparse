@@ -103,14 +103,15 @@ class BagFileProcessor:
         self.plot_all_methods = False
 
 
+
         self.highlight_regions = True
         self.xlim = 200
         # is many methods is true, we will only show two legends
         self.many_methods = False
-        self.interval = 40
+        self.interval = 20
         
         if self.robot_type == "xarm":
-            self.short_method_list = ["JParse_Kp10_gamma_01", "JacobianDampedLeastSquares"] #PAPER FIG
+            self.short_method_list = ["JParse_gamma_pt07"] #PAPER FIG
 
         elif self.robot_type == "panda":
             self.short_method_list = ["JParse_Kp15_gamma_01", "JParse_Kp15_gamma_02" , "JacobianDampedLeastSquares"]
@@ -120,7 +121,7 @@ class BagFileProcessor:
             local_directory = "/xarm/"
 
             self.methods = [
-                            "JParse_Kp1_gamma_01", "JParse_Kp2_gamma_01", "JParse_Kp3_gamma_01", "JParse_Kp4_gamma_01", "JParse_Kp5_gamma_01"]
+                            "JParse_gamma_pt07"]
 
             self.trajectories = ["ellipse_keypoint"]
             self.traj_name_plot = dict(zip(self.trajectories, [
@@ -264,6 +265,11 @@ class BagFileProcessor:
         self.process_bag_files()
     
     def extract_topic_data(self, bag, topic, msg_type):
+        print(f"\n{'='*60}")
+        print(f"EXTRACTING TOPIC DATA: {topic}")
+        print(f"Message Type: {msg_type.__name__}")
+        print(f"{'='*60}")
+
         timestamps = []
         data = []
         for _, msg, t in bag.read_messages(topics=[topic]):
@@ -287,6 +293,12 @@ class BagFileProcessor:
                     # or handle the error as needed
                     data.append(0.0)
                     rospy.logwarn(f"JointState on topic {topic} doesn't have a second joint position")
+
+        print(f"✓ Extracted {len(timestamps)} messages from {topic}")
+        if len(timestamps) > 0:
+            print(f"  Time range: {timestamps[0]:.2f}s to {timestamps[-1]:.2f}s")
+        print(f"{'='*60}\n")
+
         return np.array(timestamps), np.array(data) if data else (np.array([]), np.array([]))
 
     def align_time(self, times, bag_name=None):
@@ -303,12 +315,26 @@ class BagFileProcessor:
         return METHOD_TO_PLT_NAME.get(method, method)
 
     def process_bag_files(self):
-        for traj in self.trajectories:
 
-            print(traj)
+        print(f"\n{'█'*60}")
+        print(f"█ STARTING BAG FILE PROCESSING")
+        print(f"█ Robot type: {self.robot_type}")
+        print(f"█ Bag directory: {self.bag_dir}")
+        print(f"█ Trajectories to process: {self.trajectories}")
+        print(f"█ Methods to process: {self.methods}")
+        print(f"█ Save figures: {self.save_figures_bool}")
+        print(f"{'█'*60}\n")
+
+        for traj_idx, traj in enumerate(self.trajectories, 1):
+
+            print(f"\n{'█'*60}")
+            print(f"█ PROCESSING TRAJECTORY {traj_idx}/{len(self.trajectories)}: {traj}")
+            print(f"{'█'*60}\n")
 
             extracted_data = {}
-            for method in self.methods:
+            for method_idx, method in enumerate(self.methods, 1):
+                print(f"\n[Method {method_idx}/{len(self.methods)}] Processing method: {method}")
+                print(f"-" * 60)
                 if self.robot_type == "xarm":
                     if self.modified_bag_bool:
                         bag_path = os.path.join(self.bag_dir, f"xarm_sim_{method}_{traj}_modified.bag")
@@ -351,59 +377,79 @@ class BagFileProcessor:
                     continue
                 
                 # opening bag
+                print(f"\n{'#'*60}")
+                print(f"# OPENING BAG FILE: {bag_name}")
+                print(f"# Path: {bag_path}")
+                print(f"{'#'*60}\n")
+
                 with rosbag.Bag(bag_path, 'r') as bag:
+                    print("[1/6] Extracting /start_here topic...")
                     start_times, start_here_data = self.extract_topic_data(bag, "/start_here", Header)
                     if len(start_times) == 0:
                         take = 0
+                        print("⚠ No /start_here data found. Setting take=0")
                     else:
                         take = start_times[0]
+                        print(f"✓ Start time: {take:.2f}s")
 
-                    print(start_times)
-
-
-                    print("aligning target pose time")
+                    print(f"\n[2/6] Extracting /current_target_pose topic...")
                     target_times, target_data = self.extract_topic_data(bag, "/current_target_pose", PoseStamped)
 
                     # just take target_times of take or more
                     old_target_times = target_times
                     target_times = target_times[old_target_times >= take]
                     target_data = target_data[old_target_times >= take]
-                    
+                    print(f"  → Filtered to {len(target_times)} messages after start time")
+
                     if self.modified_bag_bool:
-                        pose_times, pose_error = self.extract_topic_data(bag, "/real_pose_error", PoseStamped)
-                        
+                        print(f"\n[3/6] Extracting /real_pose_error topic (modified bag)...")
+                        pose_times, pose_error = self.extract_topic_data(bag, "/pose_error", PoseStamped)
+
                     else:
+                        print(f"\n[3/6] Extracting /pose_error topic...")
                         pose_times, pose_error = self.extract_topic_data(bag, "/pose_error", PoseStamped)
 
                         old_pose_times = pose_times
                         pose_times = pose_times[old_pose_times >= take]
                         pose_error = pose_error[old_pose_times >= take]
+                        print(f"  → Filtered to {len(pose_times)} messages after start time")
 
-                    pose_error_norm = np.linalg.norm(pose_error, axis=1)    
-                    print("aligning orientation error time")
+                    pose_error_norm = np.linalg.norm(pose_error, axis=1)
+                    print(f"  → Computed pose error norm (shape: {pose_error_norm.shape})")
+
+                    print(f"\n[4/6] Extracting /orientation_error topic...")
                     orient_times, orient_error = self.extract_topic_data(bag, "/orientation_error", Vector3)
                     old_orient_times = orient_times
                     orient_times = orient_times[old_orient_times >= take]
                     orient_error = orient_error[old_orient_times >= take]
-                   
-                    orient_error_norm = np.linalg.norm(orient_error, axis=1)
-                    print("aligning end effector pose time")
+                    print(f"  → Filtered to {len(orient_times)} messages after start time")
 
+                    orient_error_norm = np.linalg.norm(orient_error, axis=1)
+                    print(f"  → Computed orientation error norm (shape: {orient_error_norm.shape})")
+
+                    print(f"\n[5/6] Extracting /current_end_effector_pose topic...")
                     end_effector_times, end_effector_data = self.extract_topic_data(bag, "/current_end_effector_pose", PoseStamped)
                     old_end_effector_times = end_effector_times
                     end_effector_times = end_effector_times[old_end_effector_times >= take]
                     end_effector_data = end_effector_data[old_end_effector_times >= take]
-                    
-                    print("aligning manip measure time")
+                    print(f"  → Filtered to {len(end_effector_times)} messages after start time")
+
+                    print(f"\n[6/6] Extracting /manip_measure topic...")
                     manip_measure_times, manip_data = self.extract_topic_data(bag, "/manip_measure", Float64)
                     old_manip_measure_times = manip_measure_times
                     manip_measure_times = manip_measure_times[old_manip_measure_times >= take]
                     manip_data = manip_data[old_manip_measure_times >= take]
+                    print(f"  → Filtered to {len(manip_measure_times)} messages after start time")
 
+                    print(f"\n{'*'*60}")
+                    print(f"✓ COMPLETED extraction for {bag_name}")
+                    print(f"{'*'*60}\n")
 
                     if target_times.size == 0 or end_effector_times.size == 0:
                         rospy.logwarn(f"Missing data in {bag_path}, skipping method {method} for {traj}.")
                         continue
+
+                    print(f"→ Storing extracted data for method '{method}'...\n")
                     extracted_data[method] = (
                         self.align_time(target_times,bag_name=bag_name), target_data,
                         self.align_time(pose_times, bag_name=bag_name), pose_error,
@@ -418,7 +464,13 @@ class BagFileProcessor:
                 rospy.logwarn(f"No valid data available for trajectory {traj}")
                 continue
 
+            print(f"\n{'>'*60}")
+            print(f"> GENERATING PLOTS FOR TRAJECTORY: {traj}")
+            print(f"> Methods with data: {list(extracted_data.keys())}")
+            print(f"{'>'*60}\n")
+
             # Plot the target pose for the end effector
+            print("→ Creating Figure 1: Target Position plots...")
             fig, axs = plt.subplots(3, 1, figsize=(12, 14))
             for method in extracted_data:
                 # print("extracted_data: ", extracted_data)
@@ -450,15 +502,19 @@ class BagFileProcessor:
             plt.tight_layout()
             plt.subplots_adjust(hspace=0.2, top=0.96, bottom=0.1)
             plt.show()
-            
+
             # now save figure
             if self.save_figures_bool:
                 figure_name = self.data_figure_folder + "/" + self.robot_type + "_all_methods_target_poses_" + traj + ".png"
                 if not os.path.exists(self.data_figure_folder):
-                    os.makedirs(self.data_figure_folder)    
+                    os.makedirs(self.data_figure_folder)
+                    print(f"  → Created directory: {self.data_figure_folder}")
                 fig.savefig(figure_name)  # Save as PNG
                 fig.savefig(figure_name.replace(".png", ".pdf"), format="pdf")  # Save as PDF
+                print(f"  ✓ Saved Figure 1: {figure_name}")
+                print(f"  ✓ Saved Figure 1: {figure_name.replace('.png', '.pdf')}\n")
 
+            print("→ Creating Figure 2: Error and Manipulability plots...")
             fig, axs = plt.subplots(4, 1, figsize=(12, 16),
                                     gridspec_kw={'height_ratios': [1, 1.2, 1, 1]})
             plotted_pos = False
@@ -575,11 +631,11 @@ class BagFileProcessor:
                     spine.set_linewidth(1.5)
 
             # Set y-axis labels with larger font
-            axs[0].set_ylabel('Position (m)', fontsize=9, fontweight='bold')
-            axs[1].set_ylabel('Position Error (m)', fontsize=9, fontweight='bold')
-            axs[2].set_ylabel('Ori. Error (rad)', fontsize=8, fontweight='bold')
-            axs[3].set_ylabel('Manip. Measure', fontsize=8, fontweight='bold')
-            axs[3].set_xlabel('Time (s)', fontsize=10, fontweight='bold')
+            axs[0].set_ylabel('Position (m)', fontsize=14, fontweight='bold')
+            axs[1].set_ylabel('Position Error (m)', fontsize=14, fontweight='bold')
+            axs[2].set_ylabel('Ori. Error (rad)', fontsize=14, fontweight='bold')
+            axs[3].set_ylabel('Manip. Measure', fontsize=14, fontweight='bold')
+            axs[3].set_xlabel('Time (s)', fontsize=14, fontweight='bold')
 
             # Adjust y-limits for the plots (excluding manip measure plot)
             for i, ax in enumerate(axs):
@@ -621,11 +677,20 @@ class BagFileProcessor:
             if self.save_figures_bool:
                 save_path = self.data_figure_folder + "/" + self.robot_type + "_all_methods_norm_error_" + traj + ".png"
                 if not os.path.exists(self.data_figure_folder):
-                    os.makedirs(self.data_figure_folder)    
+                    os.makedirs(self.data_figure_folder)
                 fig.savefig(save_path)  # Save as PNG
                 fig.savefig(save_path.replace(".png", ".pdf"), format="pdf")  # Save as PDF
-            
+                print(f"  ✓ Saved Figure 2: {save_path}")
+                print(f"  ✓ Saved Figure 2: {save_path.replace('.png', '.pdf')}\n")
 
+            print(f"\n{'✓'*60}")
+            print(f"✓ COMPLETED PLOTTING FOR TRAJECTORY: {traj}")
+            print(f"{'✓'*60}\n")
+
+        print(f"\n{'█'*60}")
+        print(f"█ ALL PROCESSING COMPLETE!")
+        print(f"█ Total trajectories processed: {len(self.trajectories)}")
+        print(f"{'█'*60}\n")
         rospy.loginfo("Processing complete.")
 
 if __name__ == "__main__":
