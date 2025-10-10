@@ -192,7 +192,7 @@ class JParseClass(object):
                 set_empty_bool = False
                 U_new_sing.append(np.matrix(U[:,col]).T)
                 Phi.append(ks*adjusted_condition_numbers[col]/gamma) #division by gamma for s/(s_max * gamma), gives smooth transition for Kp =1.0; 
-                rospy.loginfo("Singular direction found, adjusted condition number: %f", adjusted_condition_numbers[col])
+                # rospy.loginfo("Singular direction found, adjusted condition number: %f", adjusted_condition_numbers[col])
         
         #set an empty Phi_singular matrix, populate if there were any adjusted
         #condition numbers below the threshold
@@ -227,7 +227,7 @@ class JParseClass(object):
 
         #Publish the JParse ellipses
         ellipse_dict = {"J_safety_u": U, "J_safety_s": S_new_safety, "J_proj_u": U_new_proj, "J_proj_s": S_new_proj, "J_singular_u": U_new_sing, "J_singular_s": Phi}   
-        rospy.loginfo("Phi: %s", Phi)
+        # rospy.loginfo("Phi: %s", Phi)
         if internal_marker_flag == True:
             #this is internal for jparse marker display
             return ellipse_dict
@@ -271,8 +271,8 @@ class JParseClass(object):
             ellipse_marker_array.markers.append(J_proj_marker[0])
         #if there are singular directions, add them
         # rospy.loginfo("Number of singular directions to plot: %d", len(ellipse_dict["J_singular_s"]))
-        rospy.loginfo(ellipse_dict["J_singular_s"])
-        rospy.loginfo(gamma)
+        # rospy.loginfo(ellipse_dict["J_singular_s"])
+        # rospy.loginfo(gamma)
         J_singular_marker = self.generate_jparse_ellipses(mat_type="J_singular", U_mat=ellipse_dict["J_singular_u"], S_vect=ellipse_dict["J_singular_s"], end_effector_pose=end_effector_pose, frame_id=frame_id)
         if len(J_singular_marker) > 0:
             for idx in range(len(J_singular_marker)):
