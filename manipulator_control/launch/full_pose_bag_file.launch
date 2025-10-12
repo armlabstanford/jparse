@@ -3,13 +3,13 @@
     <arg name="bag_name" default="jparse_xarm_vel_type2_sing" doc="Name of the bag file to record"/>
 
     <!-- Argument for topics to record -->
-    <arg name="topics" default="/robot_action /manip_measure /inverse_cond_number /orientation_error /pose_error /position_error /current_end_effector_pose /current_target_pose /control_script_joint_states /jparse_ellipsoid_marker" doc="Space-separated list of topics to record"/>
+    <arg name="topics" default="/start_here /joint_states /robot_action /manip_measure /inverse_cond_number /orientation_error /pose_error /position_error /current_end_effector_pose /current_target_pose /control_script_joint_states /jparse_ellipsoid_marker" doc="Space-separated list of topics to record"/>
 
     <!-- Argument for output directory -->
     <arg name="output_dir" default="$(find manipulator_control)/bag" doc="Directory to save the bag file"/>
 
     <!-- Argument for recording all topics -->
-    <arg name="record_all" default="true" doc="Set to 'true' to record all topics, 'false' to record specific topics"/>
+    <arg name="record_all" default="false" doc="Set to 'true' to record all topics, 'false' to record specific topics"/>
 
     <!-- Argument for use_sim_time -->
     <arg name="use_sim_time_bool" default="false" doc="Set to 'true' to use simulation time, 'false' to use system time"/>

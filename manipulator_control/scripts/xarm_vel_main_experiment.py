@@ -360,8 +360,9 @@ class ArmController:
         """
 
         while not rospy.is_shutdown():
+            # print stuff in the if statement
 
-            if (self.joint_states and self.target_pose and not self.use_space_mouse) or (self.use_space_mouse and self.joint_states and self.space_mouse_command):
+            if (self.joint_states and self.target_pose and not self.use_space_mouse) or (self.use_space_mouse and self.joint_states and self.space_mouse_command is not None):
                 t = rospy.Time.now()
                 # obtain the current joints
                 q = []
@@ -376,7 +377,6 @@ class ArmController:
                 # Calculate the JParsed Jacobian
                 
                 method = self.method #set by parameter, can be set from launch file
-                rospy.loginfo("Method being used: %s", method)
                 if method == "JacobianPseudoInverse":
                     #this is the traditional pseudo-inverse method for the jacobian
                     J_method, J_nullspace = self.jacobian_calculator.JacobianPseudoInverse(q=q, position_only=self.position_only, jac_nullspace_bool=True)
@@ -409,8 +409,8 @@ class ArmController:
                 self.manip_measure_pub.publish(manip_measure)
                 inverse_cond_number = self.jacobian_calculator.inverse_condition_number(q)
                 self.inverse_cond_number.publish(inverse_cond_number)
-                rospy.loginfo("Manipulability measure: %f", manip_measure)
-                rospy.loginfo("Inverse condition number: %f", inverse_cond_number)
+                # rospy.loginfo("Manipulability measure: %f", manip_measure)
+                # rospy.loginfo("Inverse condition number: %f", inverse_cond_number)
                 #Calculate the delta_x (task space error)
                 target_pose = self.target_pose
                 current_pose = self.EndEffectorPose(q)
@@ -444,7 +444,7 @@ class ArmController:
 
                 # Calculate and command the joint velocities
                 if self.position_only == True:
-                    rospy.loginfo("Position only control")
+                    # rospy.loginfo("Position only control")
                     position_error = np.matrix(position_error).T
                     if self.is_sim == True:
                         #use these gains only in simulation!
@@ -474,13 +474,15 @@ class ArmController:
                         #use the space mouse command to control the joint velocities
                         space_mouse_command = np.matrix(self.space_mouse_command).T
                         #now add this to the joint velocities
-                        joint_velocities = J_method @ space_mouse_command + J_nullspace @ nominal_motion_nullspace
+                        joint_velocities = J_method @ space_mouse_command  + J_nullspace @ nominal_motion_nullspace
                         #check this
+
+
                 joint_velocities_list = np.array(joint_velocities).flatten().tolist()
                 # command the joint velocities
                 self.command_joint_velocities(joint_velocities_list) #this commands the joint velocities
             self.rate.sleep()
-            rospy.loginfo("Control loop running")
+            # rospy.loginfo("Control loop running")
 
 
     def velocity_home_robot(self):
@@ -553,7 +555,7 @@ class ArmController:
         else:
             # this is on the real robot, directly send joint velociteies
             # Send joint velocities to the arm
-            rospy.loginfo("Joint velocities: %s", joint_vel_list)
+            # rospy.loginfo("Joint velocities: %s", joint_vel_list)
             self.arm.vc_set_joint_velocity(joint_vel_list, is_radian=True)
 
 

@@ -111,7 +111,7 @@ class BagFileProcessor:
         self.interval = 20
         
         if self.robot_type == "xarm":
-            self.short_method_list = ["JParse_gamma_pt07"] #PAPER FIG
+            self.short_method_list = ["JParse_xarm_real_line_extended_gamma_0_07_freq_0_06"] #PAPER FIG
 
         elif self.robot_type == "panda":
             self.short_method_list = ["JParse_Kp15_gamma_01", "JParse_Kp15_gamma_02" , "JacobianDampedLeastSquares"]
@@ -121,7 +121,7 @@ class BagFileProcessor:
             local_directory = "/xarm/"
 
             self.methods = [
-                            "JParse_gamma_pt07"]
+                            "JParse_xarm_real_line_extended_gamma_0_07_freq_0_06"]
 
             self.trajectories = ["ellipse_keypoint"]
             self.traj_name_plot = dict(zip(self.trajectories, [
@@ -337,11 +337,11 @@ class BagFileProcessor:
                 print(f"-" * 60)
                 if self.robot_type == "xarm":
                     if self.modified_bag_bool:
-                        bag_path = os.path.join(self.bag_dir, f"xarm_sim_{method}_{traj}_modified.bag")
-                        bag_name = f"xarm_sim_{method}_{traj}_modified"
+                        bag_path = os.path.join(self.bag_dir, f"{method}_{traj}_modified.bag")
+                        bag_name = f"{method}_{traj}_modified"
                     else:
-                        bag_path = os.path.join(self.bag_dir, f"xarm_sim_{method}_{traj}.bag")
-                        bag_name = f"xarm_sim_{method}_{traj}"
+                        bag_path = os.path.join(self.bag_dir, f"{method}_{traj}.bag")
+                        bag_name = f"{method}_{traj}"
                 elif self.robot_type == "panda":
                     if self.modified_bag_bool:
                         bag_path = os.path.join(self.bag_dir, f"panda_sim_{method}_{traj}_modified.bag")
