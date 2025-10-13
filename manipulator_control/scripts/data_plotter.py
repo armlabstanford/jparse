@@ -54,6 +54,7 @@ METHOD_TO_PLT_NAME = {
     'JacobianDampedLeastSquares_05_kp': "DLS λ = 0.05",
     'JacobianDampedLeastSquares': "DLS",
     'JParse': "JParse",
+    "JParse_xarm_real_gamma_0_07_freq_0_05": "JParse (γ=0.07, f=0.05)",
     "JParse_Kp10_gamma_01": "JParse Kp=10 γ=1",
     "JParse_Kp20_gamma_01": "JParse Kp=20 γ=1",
     "JParse_Kp10_gamma_02": "JParse Kp=10 γ=2",
@@ -103,13 +104,19 @@ class BagFileProcessor:
         self.plot_all_methods = False
 
 
-
         self.highlight_regions = True
-        self.xlim = 200
+        self.xlim = 95
         # is many methods is true, we will only show two legends
         self.many_methods = False
         self.interval = 20
-        
+
+        # Time range for plotting (in seconds, relative to aligned time)
+        self.plot_start_time = 80  # Start time for plotting
+        self.plot_end_time = 180   # End time for plotting (set to large value to use all data)
+
+        # Max y-axis value for orientation error plot
+        self.max_orient_error_y = 0.5  # Maximum y-axis value for orientation error
+
         if self.robot_type == "xarm":
             self.short_method_list = ["JParse_xarm_real_line_extended_gamma_0_07_freq_0_06"] #PAPER FIG
 
@@ -120,14 +127,25 @@ class BagFileProcessor:
             self.data_figure_folder = package_path + "/data_figures/xarm_figures"
             local_directory = "/xarm/"
 
-            self.methods = [
-                            "JParse_xarm_real_line_extended_gamma_0_07_freq_0_06"]
+            self.methods = ["JParse_xarm_real_gamma_0_07_freq_0_05"]
 
             self.trajectories = ["ellipse_keypoint"]
             self.traj_name_plot = dict(zip(self.trajectories, [
                  "Ellipse Keypoint"
             ]))
 
+        elif self.robot_type == "xarm_sim":
+            self.data_figure_folder = package_path + "/data_figures/xarm_sim_figures"
+            local_directory = "/xarm_sim/"
+
+            self.methods = ["JParse", "JacobianSafety", "JacobianProjection", "JacobianSafetyProjection"]
+
+            self.trajectories = ["ellipse_keypoints", "line_extended_keypoints"]
+            self.traj_name_plot = dict(zip(self.trajectories, [
+                "Ellipse Keypoints",
+                 
+                 "Line Extended Keypoints"
+            ]))
 
         elif self.robot_type == "panda":
             #panda figures
@@ -142,28 +160,11 @@ class BagFileProcessor:
             self.methods = [
                 "JParse_Kp15_gamma_01", "JParse_Kp15_gamma_02", "JacobianDampedLeastSquares"]#, "JacobianNullspaceDecoupled"]
             self.methods = self.short_method_list
-            # self.trajectories = [
-            #     "ellipse", "ellipse_keypoints", "ellipse_variable_orientation", "line", "line_keypoint", "line_extended", "line_extended_keypoints"
-            # ]
-            # self.traj_name_plot = dict(zip(self.trajectories, [
-            #     "Ellipse", "Ellipse Keypoints", "Ellipse Variable Orientation", 
-            #     "Line", "Line Keypoint", "Line Extended", "Line Extended Keypoints"
-            # ]))
 
-
-            # self.trajectories = [
-            #     "line_extended", "ellipse_keypoints", "line_extended_keypoints"
-            # ]
-            # self.traj_name_plot = dict(zip(self.trajectories, [
-            #      "Line Extended", "Ellipse Keypoints", "Line Extended Keypoints"
-            # ]))
             self.trajectories = [
                 "ellipse", "ellipse_keypoints", "line_extended_keypoints"
             ]   
 
-            # self.traj_name_plot = dict(zip(self.trajectories, [
-            #      "Ellipse", "Ellipse Keypoints", "Line Extended Keypoints"
-            # ]))
             self.trajectories = [
                 "ellipse_keypoints", "line_extended_keypoints"
             ]
@@ -342,6 +343,9 @@ class BagFileProcessor:
                     else:
                         bag_path = os.path.join(self.bag_dir, f"{method}_{traj}.bag")
                         bag_name = f"{method}_{traj}"
+                elif self.robot_type == "xarm_sim":
+                    bag_path = os.path.join(self.bag_dir, f"xarm_sim_{method}_{traj}.bag")
+                    bag_name = f"xarm_sim_{method}_{traj}"
                 elif self.robot_type == "panda":
                     if self.modified_bag_bool:
                         bag_path = os.path.join(self.bag_dir, f"panda_sim_{method}_{traj}_modified.bag")
@@ -385,6 +389,7 @@ class BagFileProcessor:
                 with rosbag.Bag(bag_path, 'r') as bag:
                     print("[1/6] Extracting /start_here topic...")
                     start_times, start_here_data = self.extract_topic_data(bag, "/start_here", Header)
+                    print(start_times)
                     if len(start_times) == 0:
                         take = 0
                         print("⚠ No /start_here data found. Setting take=0")
@@ -493,6 +498,8 @@ class BagFileProcessor:
                 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
             if self.robot_type == "xarm":
                 plt.suptitle(f'Velocity Control, Target Position for {self.traj_name_plot[traj]}')
+            elif self.robot_type == "xarm_sim":
+                plt.suptitle(f'xArm Simulation, Target Position for {self.traj_name_plot[traj]}')
             elif self.robot_type == "xarm_real_autonomous":
                 plt.suptitle(f'Real Robot, Target Position for {self.traj_name_plot[traj]}')
             elif self.robot_type == "panda":
@@ -526,37 +533,38 @@ class BagFileProcessor:
 
                 target_times, target_pose, _, pose_error, pose_times, pose_error_norm, _, _, orient_times, orient_error_norm, _, _, manip_measure_times, manip_data = extracted_data[method]
                 
-                new_pose_times = [pose_times[0][idx] for idx in range(len(pose_times[0])) if pose_times[0][idx]>0.0 and pose_times[0][idx]<pose_times[1]]
-                new_pose_error_x = [pose_error[idx,0] for idx in range(len(pose_times[0])) if pose_times[0][idx]>0.0 and pose_times[0][idx]<pose_times[1]] 
-                new_pose_error_y = [pose_error[idx,1] for idx in range(len(pose_times[0])) if pose_times[0][idx]>0.0 and pose_times[0][idx]<pose_times[1]] 
-                new_pose_error_z = [pose_error[idx,2] for idx in range(len(pose_times[0])) if pose_times[0][idx]>0.0 and pose_times[0][idx]<pose_times[1]] 
+                # Shift times to start from 0 for display
+                new_pose_times = [pose_times[0][idx] - self.plot_start_time for idx in range(len(pose_times[0])) if pose_times[0][idx]>=self.plot_start_time and pose_times[0][idx]<self.plot_end_time]
+                new_pose_error_x = [pose_error[idx,0] for idx in range(len(pose_times[0])) if pose_times[0][idx]>=self.plot_start_time and pose_times[0][idx]<self.plot_end_time]
+                new_pose_error_y = [pose_error[idx,1] for idx in range(len(pose_times[0])) if pose_times[0][idx]>=self.plot_start_time and pose_times[0][idx]<self.plot_end_time]
+                new_pose_error_z = [pose_error[idx,2] for idx in range(len(pose_times[0])) if pose_times[0][idx]>=self.plot_start_time and pose_times[0][idx]<self.plot_end_time] 
 
                 # make the pose error norm from the pose_error components
                 new_pose_error_norm = np.linalg.norm(pose_error, axis=1)
-                new_pose_error_norm = [new_pose_error_norm[idx] for idx in range(len(pose_times[0])) if pose_times[0][idx]>0.0 and pose_times[0][idx]<pose_times[1]]
+                new_pose_error_norm = [new_pose_error_norm[idx] for idx in range(len(pose_times[0])) if pose_times[0][idx]>=self.plot_start_time and pose_times[0][idx]<self.plot_end_time]
                 if method == "JacobianTranspose":
                     # print out max and min of the pose error norm
                     print(f"Max pose error norm for {method}: {max(new_pose_error_norm)}")
                     print(f"Min pose error norm for {method}: {min(new_pose_error_norm)}")
 
-                # Process X and Y position data
-                new_target_times = [target_times[0][idx] for idx in range(len(target_times[0])) if target_times[0][idx]>0.0 and target_times[0][idx]<target_times[1]]
-                new_target_pose_x = [target_pose[idx,0] for idx in range(len(target_times[0])) if target_times[0][idx]>0.0 and target_times[0][idx]<target_times[1]] 
-                new_target_pose_y = [target_pose[idx,1] for idx in range(len(target_times[0])) if target_times[0][idx]>0.0 and target_times[0][idx]<target_times[1]]
-                new_target_pose_z = [target_pose[idx,2] for idx in range(len(target_times[0])) if target_times[0][idx]>0.0 and target_times[0][idx]<target_times[1]]
-                
-                new_orient_times = [orient_times[0][idx] for idx in range(len(orient_times[0])) if orient_times[0][idx] > 0.0 and orient_times[0][idx] < orient_times[1]]
-                new_orient_error_norm = [orient_error_norm[idx] for idx in range(len(orient_times[0])) if orient_times[0][idx] > 0.0 and orient_times[0][idx] < orient_times[1]]
-                
-                new_manip_measure_times = [manip_measure_times[0][idx] for idx in range(len(manip_measure_times[0])) if manip_measure_times[0][idx]>0.0 and manip_measure_times[0][idx]<manip_measure_times[1]] 
-                new_manip_measure = [manip_data[idx] for idx in range(len(manip_measure_times[0])) if manip_measure_times[0][idx]>0.0 and manip_measure_times[0][idx]<manip_measure_times[1]] 
+                # Process X and Y position data - shift times to start from 0
+                new_target_times = [target_times[0][idx] - self.plot_start_time for idx in range(len(target_times[0])) if target_times[0][idx]>=self.plot_start_time and target_times[0][idx]<self.plot_end_time]
+                new_target_pose_x = [target_pose[idx,0] for idx in range(len(target_times[0])) if target_times[0][idx]>=self.plot_start_time and target_times[0][idx]<self.plot_end_time]
+                new_target_pose_y = [target_pose[idx,1] for idx in range(len(target_times[0])) if target_times[0][idx]>=self.plot_start_time and target_times[0][idx]<self.plot_end_time]
+                new_target_pose_z = [target_pose[idx,2] for idx in range(len(target_times[0])) if target_times[0][idx]>=self.plot_start_time and target_times[0][idx]<self.plot_end_time]
+
+                new_orient_times = [orient_times[0][idx] - self.plot_start_time for idx in range(len(orient_times[0])) if orient_times[0][idx] >= self.plot_start_time and orient_times[0][idx] < self.plot_end_time]
+                new_orient_error_norm = [orient_error_norm[idx] for idx in range(len(orient_times[0])) if orient_times[0][idx] >= self.plot_start_time and orient_times[0][idx] < self.plot_end_time]
+
+                new_manip_measure_times = [manip_measure_times[0][idx] - self.plot_start_time for idx in range(len(manip_measure_times[0])) if manip_measure_times[0][idx]>=self.plot_start_time and manip_measure_times[0][idx]<self.plot_end_time]
+                new_manip_measure = [manip_data[idx] for idx in range(len(manip_measure_times[0])) if manip_measure_times[0][idx]>=self.plot_start_time and manip_measure_times[0][idx]<self.plot_end_time] 
                 
                 latex_label = self.format_method_name(method)
                 
                 if self.plot_all_methods:
-                    line_width = 1.5
+                    line_width = 2.5
                 else:
-                    line_width = 2
+                    line_width =  2.5
                 
                 if not plotted_pos:
                     plot_target_times = []
@@ -578,24 +586,34 @@ class BagFileProcessor:
                 axs[1].plot(new_pose_times, new_pose_error_norm, label=latex_label, linewidth=line_width, linestyle=method_linestyles[idx], color=method_colors[idx])
                 axs[2].plot(new_orient_times, new_orient_error_norm, label=latex_label, linewidth=line_width, linestyle=method_linestyles[idx], color=method_colors[idx])
                 axs[3].plot(new_manip_measure_times, new_manip_measure, label=latex_label, linewidth=line_width, linestyle=method_linestyles[idx], color=method_colors[idx])
-                
+
                 idx += 1
+
+            # Add horizontal line at y=0 for manipulability measure plot
+            axs[3].axhline(y=0, color='black', linewidth=2.5, linestyle='-', alpha=0.8, zorder=5)
 
             for ax in axs:
                 for spine in ax.spines.values():
                     spine.set_linewidth(6)  # thickness of border
                     spine.set_edgecolor('black')  # border color
 
-                # set x limit
-                ax.set_xlim(0, self.xlim)
+                # set x limit from 0 to the duration of the time range
+                ax.set_xlim(0, self.plot_end_time - self.plot_start_time)
 
             idx = 0
             for ax in axs:
                 # Add grid for better readability
                 ax.grid(True, linestyle='--', alpha=0.7)
 
-                # times = [1 * 14.3, 2 * 14.3, 3 * 14.3, 4 * 14.3, 5 * 14.3, 6 * 14.3]
-                times = [1 * self.interval, 2 * self.interval, 3 * self.interval, 4 * self.interval, 5 * self.interval, 6 * self.interval]
+                # Calculate shading times starting from 0 (shifted for display)
+                times = [
+                    1 * self.interval,
+                    2 * self.interval,
+                    3 * self.interval,
+                    4 * self.interval,
+                    5 * self.interval,
+                    6 * self.interval
+                ]
 
                 if self.highlight_regions:
                     ax.axvspan(0, times[0], color=shading_colors['light_gray'], alpha=0.75)
@@ -663,8 +681,8 @@ class BagFileProcessor:
                 if i == 1:  # Position error norm
                     y_max_new = y_min + (y_max - y_min) * 1
                 elif i==2:  # Orientation error norm
-                    y_max_new = y_min + (y_max - y_min) * 1
-                
+                    y_max_new = self.max_orient_error_y  # Use settable parameter
+
                 # Set new limits
                 ax.set_ylim(y_min, y_max_new)
 
