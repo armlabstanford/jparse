@@ -5,6 +5,7 @@ import math
 import numpy as np
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import PoseStamped, Pose
+from std_msgs.msg import Header
 from tf.transformations import quaternion_from_euler, quaternion_matrix
 
 class SE3Trajectory:
@@ -17,6 +18,9 @@ class SE3Trajectory:
 
         # Pose publisher
         self.pose_pub = rospy.Publisher('/target_pose', PoseStamped, queue_size=10)
+
+        # Start here publisher
+        self.start_here_pub = rospy.Publisher('/start_here', Header, queue_size=10)
 
         # Parameters for position trajectory
         self.center = rospy.get_param('~center', [0.0, 0.0, 0.0])  # Center of the oval [x, y, z]
@@ -257,6 +261,19 @@ class SE3Trajectory:
     def trajectory_loop(self):
         """Main loop for trajectory generation and marker/pose publishing."""
         rate = rospy.Rate(50)  # 50 Hz control loop
+
+        # Wait for subscribers to connect
+        rospy.sleep(1.0)
+
+        # Send start_here topic before main loop
+        start_msg = Header()
+        start_msg.stamp = rospy.Time.now()
+        start_msg.frame_id = self.base_frame
+        self.start_here_pub.publish(start_msg)
+        rospy.loginfo("Published start_here signal")
+
+        # Give time for rosbag to record
+        rospy.sleep(0.5)
 
         while not rospy.is_shutdown():
             # Calculate elapsed time

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from spacemouse import SpaceMouse
 from input2action import input2action
@@ -19,6 +19,8 @@ class Spacemouse2Xarm:
     def __init__(self):
         rospy.init_node('spacemouse2xarm')
         ip = rospy.get_param('~robot_ip', '192.168.1.233')
+
+        self.use_native_xarm_spacemouse = rospy.get_param('~use_native_xarm_spacemouse', False)
         
         self.arm = XArmAPI(ip)
         self.arm.motion_enable(enable=True)
@@ -50,12 +52,13 @@ class Spacemouse2Xarm:
         self.arm.set_mode(5)
         self.arm.set_state(0)
         self.is_resetting = False
-        
+
+        if not self.use_native_xarm_spacemouse:
+            self.arm.set_mode(4)
+            self.arm.set_state(0)
         
         self.joint_states_pub = rospy.Publisher('/joint_states', JointState, queue_size=10)
         
-        self.use_native_xarm_spacemouse = rospy.get_param('~use_native_xarm_spacemouse', False)
-
         
 
     def reset_callback(self, msg):
@@ -154,14 +157,16 @@ class Spacemouse2Xarm:
                 self.locked = bool_msg.data
                 self.lock_hand.publish(bool_msg)
         if not self.is_resetting:
-            v_scaling = 1000
+            v_scaling = 1
             vx = vx * v_scaling
             vy = vy * v_scaling
             vz = vz * v_scaling
             if self.use_native_xarm_spacemouse:
                 # use the native xarm cartesian velocity controller.
                 self.arm.vc_set_cartesian_velocity([vx, vy, vz, wx, wy, wz], is_radian=True)
-            ret_grip = self.arm.set_gripper_position(grasp)
+            
+            # set gripper position
+            # ret_grip = self.arm.set_gripper_position(grasp)
 
     def spin(self):
         rospy.spin()

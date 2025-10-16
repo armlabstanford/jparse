@@ -1,7 +1,7 @@
 <launch>
 
     <!-- Specify if the arm is xarm (velocity) or panda (torque) -->
-    <arg name="robot_type" default="xarm" />
+    <arg name="robot_type" default="kinova" />
     <arg name="save_figures" default="false" />
     <!-- set a boolean modified_bag-->
     <arg name="modified_bag" default="false" />

@@ -9,7 +9,7 @@
     <arg name="output_dir" default="$(find manipulator_control)/bag" doc="Directory to save the bag file"/>
 
     <!-- Argument for recording all topics -->
-    <arg name="record_all" default="true" doc="Set to 'true' to record all topics, 'false' to record specific topics"/>
+    <arg name="record_all" default="false" doc="Set to 'true' to record all topics, 'false' to record specific topics"/>
 
     <!-- Argument for use_sim_time -->
     <arg name="use_sim_time_bool" default="false" doc="Set to 'true' to use simulation time, 'false' to use system time"/>

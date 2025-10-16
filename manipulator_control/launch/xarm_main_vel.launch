@@ -7,7 +7,7 @@
     <!-- Topic to publish commanded joint velocities -->
     <arg name="joint_command_topic" default="/xarm/xarm7_traj_controller/command" />
     <!-- Is sim or not -->
-    <arg name="is_sim" default="True"/>
+    <arg name="is_sim" default="False"/>
     <!-- robot ip -->
     <arg name="robot_ip" default="192.168.1.235" />
     <!-- Set the phi_gain - gain in JParse singular direction -->
