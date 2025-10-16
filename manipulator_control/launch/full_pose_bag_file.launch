@@ -3,7 +3,7 @@
     <arg name="bag_name" default="jparse_xarm_vel_type2_sing" doc="Name of the bag file to record"/>
 
     <!-- Argument for topics to record -->
-    <arg name="topics" default="/robot_action /manip_measure /inverse_cond_number /orientation_error /pose_error /position_error /current_end_effector_pose /current_target_pose /control_script_joint_states /jparse_ellipsoid_marker" doc="Space-separated list of topics to record"/>
+    <arg name="topics" default="/robot_action /manip_measure /inverse_cond_number /orientation_error /pose_error /position_error /current_end_effector_pose /current_target_pose /xarm/joint_states /jparse_ellipsoid_marker /start_here /mygen3/joint_states /target_pose" doc="Space-separated list of topics to record"/>
 
     <!-- Argument for output directory -->
     <arg name="output_dir" default="$(find manipulator_control)/bag" doc="Directory to save the bag file"/>

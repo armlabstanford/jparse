@@ -224,6 +224,7 @@ class JParseClass(object):
             J_parse = J_safety_pinv @ J_proj @ J_proj_pinv + J_safety_pinv @ Phi_singular
         else:
             J_parse = J_safety_pinv @ J_proj @ J_proj_pinv
+                
 
         #Publish the JParse ellipses
         ellipse_dict = {"J_safety_u": U, "J_safety_s": S_new_safety, "J_proj_u": U_new_proj, "J_proj_s": S_new_proj, "J_singular_u": U_new_sing, "J_singular_s": Phi}   
@@ -235,19 +236,29 @@ class JParseClass(object):
         if publish_jparse_ellipses == True:
             #only shows position ellipses
             # rospy.loginfo("U_new_sing shape: %s", U_new_sing.shape)
-            self.publish_position_Jparse_ellipses(q=q, gamma=gamma, jac_nullspace_bool=False, singular_direction_gain_position=singular_direction_gain_position, singular_direction_gain_angular=singular_direction_gain_angular, verbose=verbose, publish_jparse_ellipses=publish_jparse_ellipses, end_effector_pose=end_effector_pose)
+            self.publish_position_Jparse_ellipses(q=q, gamma=0.2, jac_nullspace_bool=False, singular_direction_gain_position=singular_direction_gain_position, singular_direction_gain_angular=singular_direction_gain_angular, verbose=verbose, publish_jparse_ellipses=publish_jparse_ellipses, end_effector_pose=end_effector_pose)
 
-        if jac_nullspace_bool == True and not safety_only and not safety_projection_only:
+        if jac_nullspace_bool == True:
             #Find the nullspace of the jacobian
             J_safety_nullspace = np.eye(J_safety.shape[1]) - J_safety_pinv @ J_safety
+            # J_safety_nullspace = np.eye(J_safety.shape[1]) - J_parse @ J
+            # J_safety_nullspace = np.zeros((J_safety.shape[1], J_safety.shape[1]))
+            
+            if safety_only == True:
+                return J_safety_pinv, J_safety_nullspace
 
+            if safety_projection_only == True:
+                return J_safety_pinv @ J_proj @ J_proj_pinv, np.eye(J_safety.shape[1]) - J_safety_pinv @ J_safety
+            
             return J_parse, J_safety_nullspace
-        
+
         if safety_only == True:
             return J_safety_pinv
         
         if safety_projection_only == True:
             return J_safety_pinv @ J_proj @ J_proj_pinv
+        
+        
 
         return J_parse
 

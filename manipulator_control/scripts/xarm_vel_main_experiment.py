@@ -49,6 +49,8 @@ class ArmController:
 
         self.jparse_gamma = rospy.get_param('~jparse_gamma', 0.1) #gamma for the JParse method
 
+        self.damping = rospy.get_param('~lambda', 0.1) #damping factor for the Damped Least Squares method
+
         self.use_space_mouse = rospy.get_param('~use_space_mouse', False) #boolean to control if the space mouse is used or not
         self.use_space_mouse_jparse = rospy.get_param('~use_space_mouse_jparse', False) #boolean to control if the space mouse is used or not
 
@@ -387,9 +389,9 @@ class ArmController:
                     else:
                         J_method, J_nullspace = self.jacobian_calculator.JParse(q=q, gamma=self.jparse_gamma, ks=self.ks, position_only=self.position_only, singular_direction_gain_position=self.phi_gain_position,singular_direction_gain_angular=self.phi_gain_angular, jac_nullspace_bool=True)
                 elif method == "JacobianDampedLeastSquares":
-                    J_method, J_nullspace = self.jacobian_calculator.jacobian_damped_least_squares(q=q, damping=0.1, jac_nullspace_bool=True) #dampening of 0.1 works very well, 0.8 shows clear error
+                    J_method, J_nullspace = self.jacobian_calculator.jacobian_damped_least_squares(q=q, damping=self.damping, jac_nullspace_bool=True) #dampening of 0.1 works very well, 0.8 shows clear error
                 elif method == "JacobianProjection":
-                    J_proj, J_nullspace = self.jacobian_calculator.jacobian_projection(q=q, gamma=self.gamma, jac_nullspace_bool=True, ks=self.ks)
+                    J_proj, J_nullspace = self.jacobian_calculator.jacobian_projection(q=q, gamma=self.jparse_gamma, jac_nullspace_bool=True)
                     J_method = np.linalg.pinv(J_proj)
                 elif method == "JacobianSafety":
                     # The JParse method takes in the joint angles, gamma, position_only, and singular_direction_gain
