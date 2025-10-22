@@ -79,7 +79,7 @@ class ArmController:
 
         self.joint_states = None
         self.target_pose = None
-        self.jacobian_calculator = jparse_cls.JParseClass(base_link=self.base_link, end_link=self.end_link)
+        self.jacobian_calculator = jparse_cls.JParse(base_link=self.base_link, end_link=self.end_link)
 
         #get tf listener
         self.tfBuffer = tf2_ros.Buffer()

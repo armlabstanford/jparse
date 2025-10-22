@@ -148,7 +148,7 @@ class ArmController:
         # Initialize variables
         self.joint_states = None
         self.target_pose = None
-        self.jacobian_calculator = jparse_cls.JParseClass(base_link=self.base_link, end_link=self.end_link)
+        self.jacobian_calculator = jparse_cls.JParse(base_link=self.base_link, end_link=self.end_link)
 
         #For visual servoing
         self.visual_servoing_bool = rospy.get_param('~visual_servoing', False) #boolean to control if visual servoing is used or not

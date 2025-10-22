@@ -13,7 +13,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Quaternion, Pose, Point, PoseStamped
 
 
-class JParseClass(object):
+class JParse(object):
     def __init__(self, base_link="base_link", end_link="end_effector_link"):
         # Initialize any necessary variables or parameters here
         """
@@ -95,19 +95,22 @@ class JParseClass(object):
                 J_dot = (J - self.J_prev) / dt
                 self.J_prev = J
             return J_dot
+        
+    def make_S_matrix(self, S, m, n):
+        """
+        This function constructs the singular values matrix from a list
+        """
+        Smat = np.zeros((m, n))
+        np.fill_diagonal(Smat, S[:min(m, n)])
+
+        return Smat
 
     def svd_compose(self,U,S,Vt):
         """
         This function takes SVD: U,S,V and recomposes them for J
         """
-        Zero_concat = np.zeros((U.shape[0],Vt.shape[0]-len(S)))
-        Sfull = np.zeros((U.shape[1],Vt.shape[0]))
-        for row in range(Sfull.shape[0]):
-            for col in range(Sfull.shape[1]):
-              if row == col:
-                  if row < len(S):        
-                      Sfull[row,col] = S[row]
-        J_new =np.matrix(U)*Sfull*np.matrix(Vt)
+        Smat = self.make_S_matrix(S, U.shape[1], Vt.shape[0])
+        J_new =np.matrix(U)*Smat*np.matrix(Vt)
         return J_new
 
     def manipulability_measure(self, q=[], use_inv_cond_number=False):
@@ -151,7 +154,7 @@ class JParseClass(object):
         This function should return the JParse matrix as a numpy array.
         - gamma is the threshold value for the adjusted condition number.
         - position_only is a boolean flag to indicate whether to use only the position part of the Jacobian.
-        - singular_direction_gain is the gain for the singular direction projection matrix. Nominal values range from 1 to 10.
+        - ks is the gain for the singular direction projection matrix. Do not select values beyond 2 or 3.
         """
         #obtain the original jacobian
         J = self.jacobian(q)
@@ -292,6 +295,9 @@ class JParseClass(object):
 
     def generate_jparse_ellipses(self, mat_type=None, U_mat=None, S_vect=None, marker_ns="ellipse" , frame_id="base_link", end_effector_pose=None):
         #This function takes in the singular value directions and plots ellipses or vectors
+        # print warning always
+        rospy.logwarn("WARNING: Ellipsoids are displayed based on only the linear velocity Jacobian matrix!.")
+
         Marker_list = []
         pose = PoseStamped()
         if mat_type in ["J_safety", "J_proj"]:
@@ -442,51 +448,6 @@ class JParseClass(object):
         q.w = qw / norm
         return q
 
-    def cart_inertia(self, q=[]):
-        """
-        This is not needed for the main JParse class, but is included here for reference.
-        """
-        H = self.inertia(q)
-        J = self.jacobian(q)
-        J_pinv = np.linalg.pinv(J)
-        J_pinv_transpose = J_pinv.T
-        return J_pinv_transpose @ H @ J_pinv
-
-    def inertia(self, q=[]):
-        """
-        This is not needed for the main JParse class, but is included here for reference.
-        """
-        h_kdl = kdl.JntSpaceInertiaMatrix(self.num_joints)
-        self._dyn_kdl.JntToMass(joint_list_to_kdl(q), h_kdl)
-        return kdl_to_mat(h_kdl)
-
-    def coriolis(self,q=[], qdot=[]):
-        """
-        This is not needed for the main JParse class, but is included here for reference.
-        """
-        q = q #list
-        qdot = qdot #list
-        q_cori = [0.0 for idx in range(len(q))]
-        q_kdl = joint_list_to_kdl(q)
-        qdot_kdl = joint_list_to_kdl(qdot)
-        q_cori_kdl = joint_list_to_kdl(q_cori)
-        self._dyn_kdl.JntToCoriolis(q_kdl, qdot_kdl, q_cori_kdl)
-        q_cori_kdl = np.array([q_cori_kdl[i] for i in range(q_cori_kdl.rows())])
-        q_cori_kdl = np.matrix(q_cori_kdl).T
-        return q_cori_kdl
-
-    def gravity(self,q=[]):
-        """
-        This is not needed for the main JParse class, but is included here for reference.
-        """
-        q_grav = [0.0 for idx in range(len(q))]
-        q_kdl = joint_list_to_kdl(q)
-        q_grav_kdl = joint_list_to_kdl(q_grav)
-        self._dyn_kdl.JntToGravity(q_kdl,q_grav_kdl)
-        q_grav_kdl = np.array([q_grav_kdl[i] for i in range(q_grav_kdl.rows())])
-        q_grav_kdl = np.matrix(q_grav_kdl).T
-        return q_grav_kdl
-
     '''
     Baseline implementations for comparison
     '''
@@ -496,6 +457,24 @@ class JParseClass(object):
         This function computes the damped least squares pseudo-inverse of the Jacobian matrix for the given joint configuration.
         """
         J = self.jacobian(q)
+        J_dls = np.linalg.inv(J.T @ J + damping**2 * np.eye(J.shape[1])) @ J.T
+        if jac_nullspace_bool == False:
+            return J_dls
+        J_dls_nullspace = np.eye(J.shape[1]) - J_dls @ J
+        return J_dls, J_dls_nullspace
+
+    def jacobian_adaptive_damped_least_squares(self, q=[], damping0=0.1, manipm0 = 0.1, jac_nullspace_bool=False):
+        """
+        COMPARISON METHOD (not used in JPARSE)
+        This function computes the damped least squares pseudo-inverse of the Jacobian matrix for the given joint configuration with
+        adaptive damping based on the measure of manipulability relative to a threshold value.
+        """
+        J = self.jacobian(q)
+        w = self.manipulability_measure(q=q)
+        if w < manipm0:
+            damping = damping0*(1-(w/manipm0))**2
+        else:
+            damping = 0.0
         J_dls = np.linalg.inv(J.T @ J + damping**2 * np.eye(J.shape[1])) @ J.T
         if jac_nullspace_bool == False:
             return J_dls
@@ -543,7 +522,7 @@ class JParseClass(object):
 
 def main():
     rospy.init_node('jparse_test', anonymous=True)
-    jparse = JParseClass()
+    jparse = JParse()
     q = [0, 0, 0, 0, 0, 0]
     print("JParse:", jparse.JParse(q=q))
     print("JParse:", jparse.JParse(q=q, position_only=True))

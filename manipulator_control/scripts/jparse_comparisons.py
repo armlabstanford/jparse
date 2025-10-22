@@ -25,7 +25,7 @@ plt.rcParams.update({
     'lines.linewidth': 6.0,    # Default line thickness
 })
 
-class JParseClass(object):
+class JParse(object):
 
     def __init__(self, extra_demo=False):
       self.extra_demo = extra_demo
@@ -209,7 +209,7 @@ def run_simulation(
     sigma_minus=0.1,
     beta=0.02,
     ks=1.0,
-    JParseClass=None,
+    JParse=None,
     forward_kinematics=None,
     control_law=None,
     methods =  ["Jparse", "Jparse_high", "Jparse_low", "dls", "dls_more", "dls_less" "adls", "adls_more", "adls_less", "edls", "sqrtJP", "pinv"],
@@ -229,7 +229,7 @@ def run_simulation(
         Link lengths (m)
     gamma, damping, w0, sigma_minus, exponent, ks : float
         Control law parameters
-    JParseClass : callable
+    JParse : callable
         Constructor for JParse class (must be provided)
     forward_kinematics : callable
         Function taking (theta1, theta2) and returning (x, y)
@@ -242,7 +242,7 @@ def run_simulation(
         Dictionary containing simulation histories for each control method.
     """
 
-    assert JParseClass is not None, "Please pass your JParseClass"
+    assert JParse is not None, "Please pass your JParse class"
     assert forward_kinematics is not None, "Please pass your forward_kinematics function"
     assert control_law is not None, "Please pass your control_law function"
 
@@ -272,7 +272,7 @@ def run_simulation(
         hist[m]["theta1"][0], hist[m]["theta2"][0] = theta_init
 
     # Instantiate JParse class once
-    J_parse_cls = JParseClass(extra_demo=extra_demo)
+    J_parse_cls = JParse(extra_demo=extra_demo)
 
     # --- Main loop ---
     for i in range(1, time_steps):
@@ -598,7 +598,7 @@ results = run_simulation(
     w0_more = 0.5,
     w0_less = 0.05,
     sigma_minus=0.0,
-    JParseClass=JParseClass,
+    JParse=JParse,
     forward_kinematics=forward_kinematics,
     control_law=control_law,
     methods =  ["dls", "dls_more", "dls_less", "adls", "adls_more", "adls_less", "Jparse", "Jparse_high", "Jparse_low", "edls"],
@@ -619,7 +619,7 @@ results_coarse = run_simulation(
     w0_more = 0.5,
     w0_less = 0.05,
     sigma_minus=0.0,
-    JParseClass=JParseClass,
+    JParse=JParse,
     forward_kinematics=forward_kinematics,
     control_law=control_law,
     methods =  ["Jparse", "Jparse_high", "Jparse_low", "dls", "adls", "edls"],
