@@ -6,3 +6,9 @@
 *.pdf
 *.mp4
 *.avi
+
+# Python package build artifacts
+*.egg-info/
+dist/
+build/
+__pycache__/
