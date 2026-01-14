@@ -1,0 +1,92 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "jparse-robotics"
+version = "0.1.0"
+description = "J-PARSE: Jacobian-based Projection Algorithm for Resolving Singularities Effectively in inverse kinematic control of serial manipulators"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    { name = "Monroe Kennedy III", email = "monroek@stanford.edu" },
+    { name = "Shivani Guptasarma" },
+    { name = "Matthew Strong" },
+    { name = "Honghao Zhen" },
+]
+keywords = [
+    "robotics",
+    "kinematics",
+    "inverse-kinematics",
+    "singularity",
+    "jacobian",
+    "manipulator",
+    "control",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.20.0",
+]
+
+[project.optional-dependencies]
+pinocchio = [
+    "pin",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "black",
+    "ruff",
+    "mypy",
+]
+all = [
+    "jparse-robotics[pinocchio,dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/armlabstanford/jparse"
+Documentation = "https://github.com/armlabstanford/jparse#readme"
+Repository = "https://github.com/armlabstanford/jparse"
+Paper = "https://arxiv.org/abs/2505.00306"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/examples",
+    "/README.md",
+    "/LICENSE",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jparse_robotics"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v"
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "W"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
