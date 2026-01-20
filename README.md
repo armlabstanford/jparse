@@ -94,6 +94,19 @@ joint_velocities = J_parse @ desired_velocity
 
 See `examples/` for more detailed examples.
 
+### Interactive 2D Visualization
+
+Try the interactive demo to see J-PARSE in action:
+
+```bash
+pip install matplotlib
+python examples/visualization_2d.py
+```
+
+- **Click** anywhere to set a target position
+- **Press 'j'** to toggle between J-PARSE and standard pseudo-inverse
+- Watch how J-PARSE keeps joint velocities bounded near singularities!
+
 ---
 
 ## Quick Start with Docker
