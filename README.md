@@ -113,6 +113,12 @@ python examples/visualization_2d.py
 
 We have integrated J-PARSE with [pyroki](https://github.com/chungmin99/pyroki) for interactive 3D visualization with real robot models!
 
+<img
+  src="images/image.png"
+  alt="J-PARSE 3D Visualization with Pyroki"
+  style="width:80%;"
+/>
+
 ### Installation
 
 ```bash
