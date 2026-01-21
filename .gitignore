@@ -1,3 +1,6 @@
+# Local development files
+CLAUDE.md
+
 # Ignore all bagfiles
 *.bag
 *.DS_Store
