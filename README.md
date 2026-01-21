@@ -109,6 +109,57 @@ python examples/visualization_2d.py
 
 ---
 
+## Pyroki Integration (3D Interactive Visualization)
+
+We have integrated J-PARSE with [pyroki](https://github.com/chungmin99/pyroki) for interactive 3D visualization with real robot models!
+
+<img
+  src="examples/singularity_comparison.png"
+  alt="J-PARSE vs Pseudo-inverse comparison"
+  style="width:80%;"
+/>
+
+### Installation
+
+```bash
+pip install jparse-robotics pyroki viser robot-descriptions yourdfpy
+```
+
+### Run the 3D Visualization
+
+```bash
+# Clone the repo (if you haven't already)
+git clone https://github.com/armlabstanford/jparse.git
+cd jparse
+
+# Run with xarm7 (default)
+python examples/pyroki_3d_visualization.py
+
+# Or choose another robot
+python examples/pyroki_3d_visualization.py --robot panda
+python examples/pyroki_3d_visualization.py --robot iiwa7
+python examples/pyroki_3d_visualization.py --robot ur5
+```
+
+Then open **http://localhost:8080** in your browser.
+
+### Features
+
+- **Multiple robots**: xarm7, panda, iiwa7, iiwa14, ur5, ur10
+- **Method switching**: Toggle between J-PARSE / Pseudo-inverse / Damped LS
+- **Nullspace control**: Pulls joints toward home pose without affecting end-effector
+- **Singular direction gain**: Helps exit singularities with controlled motion
+- **Real-time metrics**: Manipulability, inverse condition number, joint velocities
+- **Manipulability ellipsoid**: Visualize the arm's dexterity in real-time
+
+### Controls
+
+- **Drag the gizmo** to set target position
+- **Adjust sliders** to tune J-PARSE gamma, nullspace gain, singular direction gain
+- **Watch "Max Joint Vel"** explode with pseudo-inverse near singularities, stay bounded with J-PARSE!
+
+---
+
 ## Quick Start with Docker
 
 To build the Docker image for the our environment, we use VNC docker, which allows for a graphical user interface displayable in the browser.
