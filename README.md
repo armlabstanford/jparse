@@ -4,7 +4,7 @@
 ### [Shivani Guptasarma](https://www.linkedin.com/in/shivani-guptasarma/), [Matthew Strong](https://peasant98.github.io/), [Honghao Zhen](https://www.linkedin.com/in/honghao-zhen/), and [Monroe Kennedy III](https://monroekennedy3.com/)
 
 
-_In Submission, Transactions on Robotics_
+_In Submission_
 
 <img
   src="images/splash.png"
