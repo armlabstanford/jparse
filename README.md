@@ -160,6 +160,40 @@ Then open **http://localhost:8080** in your browser.
 
 ---
 
+## LEAP Hand Integration
+
+J-PARSE also supports the [LEAP Hand](https://leaphand.com/) with per-finger singularity-aware control!
+
+<img
+  src="images/leap.png"
+  alt="LEAP Hand J-PARSE Visualization"
+  style="width:80%;"
+/>
+
+### Installation
+
+```bash
+pip install jparse-robotics pyroki viser yourdfpy trimesh scipy
+```
+
+### Run the LEAP Hand Visualization
+
+```bash
+python examples/pyroki_leap_hand_visualization.py
+```
+
+Then open **http://localhost:8080** in your browser.
+
+### Features
+
+- **Per-finger J-PARSE control**: Each finger (Index, Middle, Ring, Thumb) has independent IK
+- **Singularity visualization**: Color-coded indicators show proximity to singularity
+- **Manipulability ellipsoids**: Visualize each fingertip's motion capability
+- **Joint limit avoidance**: Smooth handling using exact URDF limits
+- **Nullspace control**: Maintains natural finger poses
+
+---
+
 ## Quick Start with Docker
 
 To build the Docker image for the our environment, we use VNC docker, which allows for a graphical user interface displayable in the browser.
