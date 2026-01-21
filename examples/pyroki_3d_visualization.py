@@ -213,7 +213,7 @@ def main():
         wxyz=tuple(initial_wxyz),
     )
 
-    # Add manipulability ellipsoid
+    # Add manipulability ellipsoid (solid, not wireframe)
     manip_ellipse = pk.viewer.ManipulabilityEllipse(
         server,
         robot,
@@ -221,7 +221,7 @@ def main():
         target_link_name=target_link_name,
         scaling_factor=0.15,
         visible=True,
-        wireframe=True,
+        wireframe=False,
         color=(200, 100, 255),
     )
 
