@@ -182,7 +182,7 @@ def main():
         robot,
         target_link_name,
         gamma=0.1,
-        position_only=True,
+        position_only=False,
     )
 
     # Initial configuration (middle of joint range)
@@ -407,7 +407,7 @@ def main():
 
             # Get target from gizmo (position only for now)
             target_pos = np.array(ik_target.position)
-            target_wxyz = None
+            target_wxyz = np.array(ik_target.wxyz)
 
             # Compute control step
             cfg, info = controller.step(cfg, target_pos, target_wxyz=target_wxyz, dt=dt)

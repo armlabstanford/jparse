@@ -53,13 +53,36 @@ def compute_jacobian_from_pyroki(
             lambda q: jaxlie.SE3(robot.forward_kinematics(q)).translation()
         )(cfg)[target_link_index]
     else:
-        # Full Jacobian via autodiff on SE3 log
-        def get_pose_log(q):
+        def get_pos_and_R_flat(q):
             poses = robot.forward_kinematics(q)
             target_pose = jaxlie.SE3(poses[target_link_index])
-            return target_pose.log()
+            return jnp.concatenate([
+                target_pose.translation(),              # (3,)
+                target_pose.rotation().as_matrix().reshape(-1),  # (9,)
+            ])  # (12,)
 
-        jacobian = jax.jacfwd(get_pose_log)(cfg)
+        J_combined = jax.jacfwd(get_pos_and_R_flat)(cfg)  # (12, n_joints)
+        J_pos = J_combined[:3, :]                          # (3, n_joints)
+        dR_flat_dq = J_combined[3:, :]                    # (9, n_joints)
+
+        # Geometric (spatial) angular Jacobian:
+        #   omega_spatial = unskew(dR/dq_i @ R^T) for each joint i
+        # This is the correct Jacobian to use with world-frame orientation error
+        #   omega_error = log(q_target @ q_current^{-1}).
+        dR_dq = np.array(dR_flat_dq).reshape(3, 3, -1)  # (3, 3, n_joints)
+        R_mat = np.array(
+            jaxlie.SE3(robot.forward_kinematics(cfg)[target_link_index]).rotation().as_matrix()
+        )
+        # omega_skew_all[a,b,i] = (dR/dq_i @ R^T)[a,b]
+        omega_skew_all = np.einsum('acj,bc->abj', dR_dq, R_mat)  # (3, 3, n_joints)
+        # unskew: [skew[2,1], skew[0,2], skew[1,0]] = [omega_x, omega_y, omega_z]
+        J_ang = np.array([
+            omega_skew_all[2, 1],
+            omega_skew_all[0, 2],
+            omega_skew_all[1, 0],
+        ])  # (3, n_joints)
+
+        jacobian = np.vstack([J_pos, J_ang])  # (6, n_joints)
 
     return np.array(jacobian)
 
